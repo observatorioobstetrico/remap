@@ -1,0 +1,4 @@
+devtools::document() atualiza o namespace com seu roxygen
+devtools::load_all() recarrega o pacote
+renv::install("username/reponame") resolve renv erro instalando package do proprio rep do GitHub
+golem::add_shinyappsio_file() deploy/republish

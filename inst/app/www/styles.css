@@ -1,0 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&family=Lato:wght@300&display=swap');
+
+/* ---- Estilos gerais do app ---- */
+.negrito {
+  font-weight: 500;
+}
+.tt {
+  font-family: 'Courier Prime';
+}
+.normal {
+  font-weight: normal;
+}
+
+/* Navbar e fundo principal */
+.navbar-primary {
+  background-color: #0A1E3C;
+}
+.bg-primary {
+  background-color: #0A1E3C!important;
+}
+.brand-link {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.main-header.navbar {
+  background-color: #0A1E3C !important;
+}
+.navbar-nav.ml-auto {
+  display: none !important;
+}
+/* Se quiser .nav-link com fundo e cor específicas */
+.nav-link {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+/* Oculta apenas o ícone "bars"
+.nav-link[data-widget="pushmenu"] i.fas.fa-bars {
+  display: none !important;
+}*/
+/* Remove todo o link de toggle da sidebar
+.nav-link[data-widget="pushmenu"] {
+  display: none !important;
+}*/
+
+/* Lateral / sidebar */
+.nav-sidebar .nav-link {
+  background-color: white !important;
+  color: black !important;
+  border-radius: 5px;
+  font-weight: bold;
+}
+.nav-sidebar .nav-link.active {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.nav-sidebar .nav-link:hover {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.sidebar-menu .nav-item .nav-treeview .nav-item a {
+  margin-left: 9px;
+  font-size: 80%;
+  background-color: white !important;
+  color: #777 !important;
+}
+.sidebar-menu .nav-item .nav-treeview .nav-item a:hover {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.sidebar-menu .nav-item .nav-treeview .nav-item .nav-link.active {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+
+/* Selectize */
+.selectize-dropdown-content .active {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.selectize-dropdown-content .option:hover {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.selectize-dropdown-content .option {
+  background-color: white !important;  /* Fundo branco padrão */
+  color: black !important;             /* Texto preto padrão */
+}
+.selectize-dropdown-content .option:focus{
+  background-color: #0A1E3C !important; /* Fundo azul escuro no foco */
+  color: white !important;              /* Texto branco no foco */
+}
+.selectize-control.single .selectize-input:focus {
+  border-color: #0A1E3C !important;
+  box-shadow: 10 10 25px rgba(10, 30, 60, 0.8) !important;
+  outline: none !important;
+}
+.selectize-control.single .selectize-input {
+  background-color: white !important;
+  color: black !important;
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  border-width: 2.5px;
+  border-color: #0A1E3C !important;
+}
+.selectize-control.single .selectize-input:hover {
+  box-shadow: 0 0 8px rgba(10, 30, 60, 0.6) !important;
+  border-color: #0A1E3C !important;
+}
+/* -------------------- */
+/* Override para altura uniforme dos select inputs */
+.selectize-control.single .selectize-input,
+.bootstrap-select .dropdown-toggle,
+.form-control {
+  height: 40px !important;
+  line-height: 40px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+}
+/* Título do selectInput */
+.form-group label {
+  font-size: 17px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  color: #0A1E3C;
+}
+
+/* Card e box custom */
+.card-header {
+  background-color: #0A1E3C !important;
+  color: white !important;
+}
+.card-header .card-tools {
+  display: none !important;
+}
+/* Força os elementos dentro das caixinhas a terem altura fixa e centralizados */
+.custom-box h4,
+.custom-box h3 {
+  min-height: 50px;   /* Ajuste esse valor conforme necessário */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0;
+}
+/* Boxes onde aparecem sumários */
+.custom-box {
+  width: 100%;
+  padding: 15px;
+  border-radius: 5px;
+  color: black;
+  background-color: white;
+  text-align: center;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;       /* Coloca os elementos lado a lado */
+  justify-content: center;     /* Centraliza horizontalmente o conteúdo */
+  align-items: center;         /* Alinha verticalmente os itens */
+  gap: 10px;                   /* Espaço opcional entre o título e o número */
+}
+.custom-box h4 {
+  font-size: 16px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+.custom-box h3 {
+  font-size: 30px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+.reduced-padding {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+.bootstrap-select .dropdown-toggle {
+  background-color: white !important;
+  color: black !important;
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  border-width: 2.5px;
+  border: 2.5px solid #0A1E3C !important;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(10, 30, 60, 0.6) !important;
+  outline: none !important;
+}
+.bootstrap-select .dropdown-toggle:hover,
+.bootstrap-select .dropdown-toggle:focus {
+  border-color: #0A1E3C !important;
+  box-shadow: 0 0 8px rgba(10, 30, 60, 0.6) !important;
+}
+
+
+/* Painel / título principal */
+.panel-title-custom {
+  background-color: #0A1E3C;
+  color: white;
+  font-size: 35px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 19px;
+  padding: 10px 15px;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  text-shadow: 4px 4px 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Tabelas */
+.dataTables_wrapper {
+  width: 100%;
+}
+/* Força a altura das tabelas para 400px e ativa o scroll vertical */
+/* Essa regra se aplica à área de rolagem do DT */
+.dataTables_scrollBody {
+  height: 400px !important;
+  min-height: 400px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+}
+.dt-center {
+  text-align: center;
+}
+.card-title {
+  font-weight: bold;
+}
+
+/* Etc. se quiser remover scrolls fixos, etc. */
+.div-titulo {
+  position: fixed;
+  top: 56px;
+  width: 93.75%;
+  background-color: white;
+  z-index: 100;
+  height: fit-content;
+}
+.div-dependente {
+  top: 56px;
+}
+.layout-navbar-fixed .wrapper .main-sidebar:hover .brand-link {
+  width: 300px !important;
+  transition: none !important;
+}
+.layout-navbar-fixed .wrapper .brand-link {
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  width: 300px !important;
+  transition: none !important;
+  z-index: 1035;
+}
+.brand-link .brand-image {
+  float: left;
+  line-height: .8;
+  margin-left: 0.1em;
+  margin-right: 0.5rem;
+  margin-top: -3px;
+  max-height: 33px;
+  width: auto;
+}
+
+/* Card2 e etc. se você usava */
+.card2 {
+  border-radius: 5px;
+  box-shadow: 7px 7px 13px 0px rgba(50, 50, 50, 0.22);
+  padding: 20px;
+  margin: 20px;
+  height: 270px;
+  overflow-y: auto;
+  transition: all 0.3s ease-out;
+  background-color: white;
+}
+.card2:hover {
+  transform: translateY(-5px);
+  cursor: auto;
+}
+.card2 p {
+  color: #515257;
+  font-size: 16px;
+}
+.blue2 {
+  border-left: 3px solid #4895ff;
+}

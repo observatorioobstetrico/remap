@@ -47,7 +47,7 @@ usethis::use_test("app")
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("remap")
+usethis::use_vignette("shinyremap")
 devtools::build_vignettes()
 
 ## Code Coverage----

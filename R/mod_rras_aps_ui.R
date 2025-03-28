@@ -32,19 +32,30 @@ mod_rras_aps_ui <- function(id) {
       ),
       column(
         width = 4,
-        # Se o nível for DRS, exibe o select de análise de SP; senão, exibe um placeholder para manter o layout
+        # Para nível DRS: exibe o input "analisar_sp"
         conditionalPanel(
           condition = sprintf("input['%s'] == 'DRS'", ns("nivel_selection")),
           selectInput(
             inputId = ns("analisar_sp"),
-            label = "Analisar a cidade de São Paulo?",
+            label = "Especificar a cidade de São Paulo?",
             choices = c("NÃO", "SIM"),
             selected = "NÃO"
           )
         ),
+        # Para nível MUNICIPAL: exibe o input "analisar_muni_sp"
         conditionalPanel(
-          condition = sprintf("input['%s'] != 'DRS'", ns("nivel_selection")),
-          tags$div(style = "height: 68px;")  # ajuste a altura conforme necessário
+          condition = sprintf("input['%s'] == 'MUNICIPAL'", ns("nivel_selection")),
+          selectInput(
+            inputId = ns("analisar_muni_sp"),
+            label = "Especificar a cidade de São Paulo?",
+            choices = c("NÃO", "SIM"),
+            selected = "NÃO"
+          )
+        ),
+        # Se não for DRS nem MUNICIPAL, insere um placeholder para manter o alinhamento
+        conditionalPanel(
+          condition = sprintf("input['%s'] != 'DRS' && input['%s'] != 'MUNICIPAL'", ns("nivel_selection"), ns("nivel_selection")),
+          tags$div(style = "height: 68px;")
         )
       ),
       column(
@@ -64,11 +75,7 @@ mod_rras_aps_ui <- function(id) {
     # Caixas extras para nível MUNICIPAL
     conditionalPanel(
       condition = sprintf("input['%s'] == 'MUNICIPAL'", ns("nivel_selection")),
-      fluidRow(
-        column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_1")))),
-        column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_2")))),
-        column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_3"))))
-      )
+      uiOutput(ns("municipal_extras"))
     ),
     # Bloco para os gráficos quando nível não for MUNICIPAL
     conditionalPanel(
@@ -121,7 +128,7 @@ mod_rras_aps_ui <- function(id) {
         column(
           width = 6,
           bs4Dash::bs4Card(
-            title  = "Estabelecimentos de Referência para AAE (AGAR)",
+            title  = "Estabelecimentos de referência para AAE (AGAR)",
             height = "100%",
             width = NULL,
             collapsible = FALSE,   # Desativa o recurso de minimizar
@@ -132,7 +139,7 @@ mod_rras_aps_ui <- function(id) {
         column(
           width = 6,
           bs4Dash::bs4Card(
-            title  = "Estabelecimentos de Referência para Parto (Baixo Risco)",
+            title  = "Estabelecimentos de referência para Parto (Baixo Risco)",
             height = "100%",
             width = NULL,
             collapsible = FALSE,   # Desativa o recurso de minimizar

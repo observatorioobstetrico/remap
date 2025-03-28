@@ -144,6 +144,7 @@
 }
 /* Boxes onde aparecem sumários */
 .custom-box {
+  height: 185px !important;
   width: 100%;
   padding: 15px;
   border-radius: 5px;
@@ -276,5 +277,10 @@
   font-size: 16px;
 }
 .blue2 {
-  border-left: 3px solid #4895ff;
+  border-left: 3px solid #0A1E3C;
 }
+
+
+
+
+

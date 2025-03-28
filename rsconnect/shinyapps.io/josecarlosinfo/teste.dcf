@@ -1,0 +1,12 @@
+name: teste
+title: teste
+username: josecarlosinfo
+account: josecarlosinfo
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14361052
+bundleId: 10015020
+url: https://josecarlosinfo.shinyapps.io/teste/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

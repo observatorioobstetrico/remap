@@ -118,7 +118,7 @@ golem_add_external_resources <- function() {
     favicon(),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "remap"
+      app_title = "shinyremap"
     ),
     shiny::includeCSS(app_sys("app", "www/styles.css")),
     shiny::includeScript(app_sys("app", "www/scripts.js"))

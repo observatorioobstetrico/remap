@@ -220,6 +220,23 @@ load_data <- function() {
   # Leitura da planilha RRAS-MUNICIPIO e padronização
   rras_municipio <- to_upper_df(readxl::read_excel(rras_municipio_path))
 
+  # Correção dos totais para a cidade de São Paulo
+  total_sp_path <- file.path(app_sys("app", "data"), "total_sp.xlsx")
+  total_sp <- to_upper_df(readxl::read_excel(total_sp_path))
+  # Opcional: ajuste os nomes das colunas se necessário, por exemplo:
+  colnames(total_sp) <- toupper(colnames(total_sp))
+
+  colnames(total_sp) <- toupper(c(
+    "MUNICIPAL",
+    "Nº DE NASCIDOS VIVOS",
+    "COBERTURA ANS %",
+    "Nº DE UBS",
+    "COBERTURA ESF %",
+    "COBERTURA AB %",
+    "GESTANTES SUSDEPENDENTES ESTIMADAS/ANO",
+    "NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO"
+  ))
+
   tabela_APS$RRAS <- factor(tabela_APS$RRAS, levels = paste0("RRAS ", 1:18))
 
   # Retorna lista com todos os dados
@@ -261,6 +278,7 @@ load_data <- function() {
     tabela_17_APS_BXRISCO = tabela_17_APS_BXRISCO,
     tabela_18_APS_AAE = tabela_18_APS_AAE,
     tabela_18_APS_BXRISCO = tabela_18_APS_BXRISCO,
-    rras_municipio = rras_municipio
+    rras_municipio = rras_municipio,
+    total_sp = total_sp
   )
 }

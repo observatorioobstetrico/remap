@@ -32,4 +32,4 @@ LazyData: true
 RoxygenNote: 7.3.1
 Depends: 
     R (>= 2.10)
-URL: https://github.com/observatorioobstetrico/remap
+URL: https://github.com/Soju-JC/shinyremap

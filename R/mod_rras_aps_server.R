@@ -76,10 +76,29 @@ mod_rras_aps_server <- function(id, data_list) {
       }
     }
 
-    # Função auxiliar para construir o gráfico de barras com orientação dinâmica.
-    # Refatorada para usar chamadas aninhadas em vez de pipe.
+    # Função auxiliar para formatar inteiros com separador de milhar (ponto)
+    format_integer <- function(x) {
+      formatC(as.integer(x), format = "d", big.mark = ".", decimal.mark = ",")
+    }
+
     build_bar_plot <- function(data, var_numeric, var_category, is_percentage = FALSE, force_vertical = FALSE) {
+      # Se a categoria for "MUNICIPAL", exibe como "MUNICÍPIO"
+      display_category <- ifelse(var_category == "MUNICIPAL", "MUNICÍPIO", var_category)
       n_bars <- nrow(data)
+
+      # Pré-formata os valores para o hover (customdata)
+      if(is_percentage){
+        data$formatted_value <- sapply(data[[var_numeric]], function(x) {
+          x_num <- as.numeric(x)
+          format(round(x_num, 1), nsmall = 1, big.mark = ".", decimal.mark = ",")
+        })
+      } else {
+        data$formatted_value <- sapply(data[[var_numeric]], function(x) {
+          x_num <- as.numeric(x)
+          # Arredonda para inteiro e formata com separador de milhar como ponto
+          format_integer(x_num)
+        })
+      }
 
       if(force_vertical) {
         orientation <- "v"
@@ -91,48 +110,96 @@ mod_rras_aps_server <- function(id, data_list) {
         orientation <- if(all_short) "v" else "h"
       }
 
+      # Define o hovertemplate para mostrar a categoria e o valor formatado (customdata)
       if (orientation == "h") {
+        # Em orientação horizontal, x é o valor e y é a categoria.
+        hovertemplate <- paste0("%{y}<br>%{customdata}<extra></extra>")
+      } else {
+        # Em orientação vertical, x é a categoria e y é o valor.
+        hovertemplate <- paste0("%{x}<br>%{customdata}<extra></extra>")
+      }
+
+      # Configuração padrão do hoverlabel
+      hl <- list(bgcolor = "white",
+                 bordercolor = "#0A1E3C",
+                 font = list(color = "black", size = 14, family = "Arial Black"))
+
+      # Para os eixos, se não for porcentagem, cria rótulos customizados com separador de milhar.
+      if (!is_percentage) {
+        # Para o eixo que exibe os valores (dependendo da orientação)
+        tick_vals_numeric <- pretty(range(c(0, data[[var_numeric]]), na.rm = TRUE))
+        tick_text_numeric <- sapply(tick_vals_numeric, format_integer)
+      }
+
+      if (orientation == "h") {
+        # Para orientação horizontal: x é o valor, y é a categoria.
+        # Configura o eixo x com os ticks customizados se não for porcentagem.
+        xaxis_config <- list(
+          title = list(text = wrap_vertical_title(var_numeric), standoff = 0L),
+          tickfont = list(size = 12, color = "#000000")
+        )
+        if(is_percentage){
+          xaxis_config$tickformat <- ".1f"
+          xaxis_config <- c(xaxis_config, list(range = c(0, 100), dtick = 20))
+        } else {
+          xaxis_config$tickvals <- tick_vals_numeric
+          xaxis_config$ticktext <- tick_text_numeric
+        }
+
         p <- plotly::plot_ly(
           data = data,
           x = as.formula(paste0("~`", var_numeric, "`")),
           y = as.formula(paste0("~`", var_category, "`")),
           type = "bar",
           orientation = "h",
-          marker = list(color = "#0A1E3C")
+          marker = list(color = "#0A1E3C"),
+          customdata = data$formatted_value,
+          hovertemplate = hovertemplate
         )
         p <- plotly::layout(p,
-                            xaxis = c(
-                              list(
-                                title = list(text = wrap_vertical_title(var_numeric), standoff = 0L),
-                                tickformat = "d",
-                                tickfont = list(size = 12, color = "#000000")
-                              ),
-                              if(is_percentage) list(range = c(0, 100), dtick = 20) else list()
-                            ),
+                            xaxis = xaxis_config,
                             yaxis = list(
-                              title = list(text = var_category, standoff = 0L),
+                              title = list(text = display_category, standoff = 0L),
                               tickfont = list(size = 12, color = "#000000"),
                               categoryorder = "category ascending",
                               autorange = "reversed"
+                            ),
+                            hoverlabel = hl
                             )
-        )
       } else {
+        # Para orientação vertical: x é a categoria, y é o valor.
         original_categories <- data[[var_category]]
         categories <- ifelse(
           grepl("^[[:alpha:]]+\\s+[[:alpha:]]+$", original_categories),
           sub("\\s+", "<br>", original_categories),
           gsub("^((\\S+\\s+\\S+))\\s+", "\\1<br>", original_categories)
         )
+
+        # Configura o eixo y com ticks customizados se não for porcentagem.
+        yaxis_config <- list(
+          title = list(text = wrap_after_second(var_numeric, threshold = 19), standoff = 20L, size = 1),
+          tickfont = list(size = 12, color = "#000000")
+        )
+        if(is_percentage){
+          yaxis_config$tickformat <- ".1f"
+          yaxis_config <- c(yaxis_config, list(range = c(0, 100), dtick = 20))
+        } else {
+          yaxis_config$tickvals <- tick_vals_numeric
+          yaxis_config$ticktext <- tick_text_numeric
+        }
+
         p <- plotly::plot_ly(
           data = data,
           x = as.formula(paste0("~`", var_category, "`")),
           y = as.formula(paste0("~`", var_numeric, "`")),
           type = "bar",
-          marker = list(color = "#0A1E3C")
+          marker = list(color = "#0A1E3C"),
+          customdata = data$formatted_value,
+          hovertemplate = hovertemplate
         )
         p <- plotly::layout(p,
                             xaxis = list(
-                              title = list(text = var_category, standoff = 20L),
+                              title = list(text = display_category, standoff = 20L),
                               tickmode = "array",
                               tickvals = original_categories,
                               ticktext = categories,
@@ -140,16 +207,9 @@ mod_rras_aps_server <- function(id, data_list) {
                               automargin = TRUE,
                               tickfont = list(size = 12, color = "#000000")
                             ),
-                            yaxis = c(
-                              list(
-                                title = list(text = wrap_after_second(var_numeric, threshold = 19), standoff = 20L, size = 1),
-                                tickfont = list(size = 12, color = "#000000"),
-                                tickformat = "d"
-                              ),
-                              if(is_percentage) list(range = c(0, 100), dtick = 20) else list()
-                            ),
-                            margin = list(b = 90)
-        )
+                            yaxis = yaxis_config,
+                            margin = list(b = 90),
+                            hoverlabel = hl)
       }
       p
     }
@@ -168,13 +228,24 @@ mod_rras_aps_server <- function(id, data_list) {
       if (input$nivel_selection == "ESTADUAL") {
         return(NULL)
       } else {
-        label_text <- "Selecione:"  # label padrão
         if (input$nivel_selection == "DRS") {
           if (!is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
             label_text <- "Selecione a coordenadoria de saúde:"
           } else {
             label_text <- "Selecione a DRS:"
           }
+        } else if (input$nivel_selection == "RRAS") {
+          label_text <- "Selecione a RRAS:"
+        } else if (input$nivel_selection == "REGIÃO DE SAÚDE") {
+          label_text <- "Selecione a região de saúde:"
+        } else if (input$nivel_selection == "MUNICIPAL") {
+          if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
+            label_text <- "Selecione a supervisão de saúde:"
+          } else {
+            label_text <- "Selecione o município:"
+          }
+        } else {
+          label_text <- "Selecione:"
         }
         shinyWidgets::pickerInput(
           inputId = ns("secondary_filter"),
@@ -203,7 +274,11 @@ mod_rras_aps_server <- function(id, data_list) {
         choices <- sort(unique(tabela_APS$`REGIÃO DE SAÚDE`))
         shinyWidgets::updatePickerInput(session, "secondary_filter", choices = choices, selected = choices[1])
       } else if(level == "MUNICIPAL"){
-        choices <- sort(unique(tabela_APS$MUNICIPAL))
+        if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
+          choices <- sort(unique(tabela_APS$`SUPERVISÃO DE SAÚDE`))
+        } else {
+          choices <- sort(unique(tabela_APS$MUNICIPAL))
+        }
         shinyWidgets::updatePickerInput(session, "secondary_filter", choices = choices, selected = choices[1])
       }
     })
@@ -230,26 +305,129 @@ mod_rras_aps_server <- function(id, data_list) {
         tabela_APS[tabela_APS$`REGIÃO DE SAÚDE` == input$secondary_filter, ]
       } else if(level == "MUNICIPAL"){
         req(input$secondary_filter)
-        tabela_APS[tabela_APS$MUNICIPAL == input$secondary_filter, ]
+        if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
+          tabela_APS[tabela_APS$`SUPERVISÃO DE SAÚDE` == input$secondary_filter, ]
+        } else {
+          tabela_APS[tabela_APS$MUNICIPAL == input$secondary_filter, ]
+        }
       }
     })
 
-    # Dados para gráficos: se ESTADUAL, agregação por RRAS; caso contrário, usa os dados filtrados
+    # # Dados para gráficos: se ESTADUAL, agregação por RRAS; caso contrário, usa os dados filtrados
+    # plot_data <- reactive({
+    #   if (input$nivel_selection == "ESTADUAL") {
+    #     aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
+    #                     `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
+    #                     `Nº DE UBS`,
+    #                     `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`
+    #                     # `COBERTURA ANS %`,
+    #                     # `COBERTURA ESF %`,
+    #                     # `COBERTURA AB %`
+    #                     ) ~ RRAS,
+    #               data = tabela_APS, FUN = sum, na.rm = TRUE)
+    #   } else {
+    #     filtered_data()
+    #   }
+    # })
+
+    # Plot geral sem dor de cabeça com SP
     plot_data <- reactive({
-      if (input$nivel_selection == "ESTADUAL") {
+      level <- input$nivel_selection
+      if (level == "ESTADUAL") {
         aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
                         `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
                         `Nº DE UBS`,
-                        `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`
-                        # `COBERTURA ANS %`,
-                        # `COBERTURA ESF %`,
-                        # `COBERTURA AB %`
-                        ) ~ RRAS,
+                        `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`) ~ RRAS,
+                  data = tabela_APS, FUN = sum, na.rm = TRUE)
+      } else if (level == "DRS" && (!is.null(input$analisar_sp) && input$analisar_sp == "NÃO")) {
+        # Para DRS quando NÃO especifica SP, agrega os dados por MUNICIPAL
+        df <- tabela_APS[tabela_APS$DRS == input$secondary_filter, ]
+        aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
+                        `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
+                        `Nº DE UBS`,
+                        `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`,
+                        `COBERTURA ANS %`,
+                        `COBERTURA ESF %`,
+                        `COBERTURA AB %`) ~ MUNICIPAL,
+                  data = df, FUN = sum, na.rm = TRUE)
+      } else {
+        filtered_data()
+      }
+    })
+
+    # Plot considerando SP (menos cobertura ESF) ao adicionae a linha com seus totais
+    plot_data_main <- reactive({
+      level <- input$nivel_selection
+      if (level == "DRS" && (!is.null(input$analisar_sp) && input$analisar_sp == "NÃO")) {
+        df <- tabela_APS[tabela_APS$DRS == input$secondary_filter, ]
+        if (input$secondary_filter == "GRANDE SÃO PAULO") {
+          # Agrega por município para os demais (SP é deletada pelo agg)
+          agg <- aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
+                                 `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
+                                 `Nº DE UBS`,
+                                 `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`,
+                                 `COBERTURA ANS %`,
+                                 `COBERTURA ESF %`,
+                                 `COBERTURA AB %`) ~ MUNICIPAL,
+                           data = df, FUN = sum, na.rm = TRUE)
+          # Converte a coluna MUNICIPAL para character
+          agg$MUNICIPAL <- as.character(agg$MUNICIPAL)
+          # Se a linha "SÃO PAULO" não estiver presente, cria-a agregando todas as linhas correspondentes
+          if (!("SÃO PAULO" %in% agg$MUNICIPAL)) {
+            df2 <- df[df$MUNICIPAL == "SÃO PAULO", ] # Subset só da cidade de SP
+            total_sp <- data_list$total_sp # Carrega linha de totais de SP
+            # Valors da planilha estão com separador decimal em vírgula (passa pra ponto)
+            total_sp$`COBERTURA ANS %` <- as.numeric(gsub(",", ".", total_sp$`COBERTURA ANS %`))
+            total_sp$`COBERTURA AB %` <- as.numeric(gsub(",", ".", total_sp$`COBERTURA AB %`))
+
+            # Define dataframe dos totais de SP
+            sp <- data.frame(
+              MUNICIPAL = "SÃO PAULO",
+              `Nº DE NASCIDOS VIVOS` = sum(df2$`Nº DE NASCIDOS VIVOS`, na.rm = TRUE),
+              `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO` = sum(df2$`NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`, na.rm = TRUE),
+              `Nº DE UBS` = sum(df2$`Nº DE UBS`, na.rm = TRUE),
+              `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO` = sum(df2$`GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`, na.rm = TRUE),
+              `COBERTURA ANS %` = sum(total_sp$`COBERTURA ANS %`, na.rm = TRUE),
+              `COBERTURA ESF %` = sum(df$`COBERTURA ESF %`, na.rm = TRUE),
+              `COBERTURA AB %` = sum(total_sp$`COBERTURA AB %`, na.rm = TRUE),
+              stringsAsFactors = FALSE
+            )
+            # Se necessário, alinhe os nomes
+            names(sp) <- names(agg)
+            agg <- rbind(agg, sp) # Adiciona a linha de SP ao dataframe agregado
+          }
+          agg
+        } else {
+          aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
+                          `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
+                          `Nº DE UBS`,
+                          `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`,
+                          `COBERTURA ANS %`,
+                          `COBERTURA ESF %`,
+                          `COBERTURA AB %`) ~ MUNICIPAL,
+                    data = df, FUN = sum, na.rm = TRUE)
+        }
+      } else if (level == "ESTADUAL") {
+        aggregate(cbind(`Nº DE NASCIDOS VIVOS`,
+                        `NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO`,
+                        `Nº DE UBS`,
+                        `GESTANTES SUSDEPENDENTES ESTIMADAS/ANO`) ~ RRAS,
                   data = tabela_APS, FUN = sum, na.rm = TRUE)
       } else {
         filtered_data()
       }
     })
+
+    # Plot para não considerar SP (casos específicos como a cobertura ESF, onde SP não possui dados)
+    plot_data_cov <- reactive({
+      df <- plot_data_main()
+      # Se a DRS selecionada for GRANDE SÃO PAULO, remove a linha "SÃO PAULO" para os gráficos de cobertura
+      if (input$nivel_selection == "DRS" && input$secondary_filter == "GRANDE SÃO PAULO") {
+        df <- dplyr::filter(df, MUNICIPAL != "SÃO PAULO")
+      }
+      df
+    })
+
 
     # Dados para tabelas de AAE
     filtered_data_aae <- reactive({
@@ -457,79 +635,192 @@ mod_rras_aps_server <- function(id, data_list) {
     # Caixas resumo principais
     output$summary_box_1 <- renderUI({
       total_nascidos <- round(sum(filtered_data()[["Nº DE NASCIDOS VIVOS"]], na.rm = TRUE))
+      # Condicional: se o nível for MUNICIPAL, define o caption; senão, fica NULL
+      caption <- if (!is.null(input$nivel_selection) && input$nivel_selection == "MUNICIPAL") {
+        tags$div(
+          "Ano de atualização dos dados: 2023",
+          style = "position: absolute; bottom: 0px; left: 0; right: 0; font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 10px; border-radius: 0 0 3px 3px; text-align: center; box-sizing: border-box;"
+        )
+      } else {
+        NULL
+      }
       div(
         class = "custom-box box-primary",
         style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
-        h4("Nascidos Vivos"),
-        h3(format_number(total_nascidos))
+        h4("Nascidos vivos"),
+        h3(format_number(total_nascidos)),
+        caption
       )
     })
 
     output$summary_box_2 <- renderUI({
       total_sus_nasc <- sum(filtered_data()[["NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO"]], na.rm = TRUE)
+      # Condicional: se o nível for MUNICIPAL, define o caption; senão, fica NULL
+      caption <- if (!is.null(input$nivel_selection) && input$nivel_selection == "MUNICIPAL") {
+        tags$div(
+          "Ano de atualização dos dados: 2020",
+          style = "position: absolute; bottom: 0px; left: 0; right: 0; font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 10px; border-radius: 0 0 3px 3px; text-align: center; box-sizing: border-box;"
+        )
+      } else {
+        NULL
+      }
       div(
         class = "custom-box box-success",
         style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
         h4("Nascidos vivos SUSdependentes estimados/ano"),
-        h3(format_number(ceiling(total_sus_nasc)))
+        h3(format_number(round(total_sus_nasc, 0))),
+        caption
       )
     })
 
     output$summary_box_3 <- renderUI({
       total_ubs <- sum(filtered_data()[["Nº DE UBS"]], na.rm = TRUE)
+      # Condicional: se o nível for MUNICIPAL, define o caption; senão, fica NULL
+      caption <- if (!is.null(input$nivel_selection) && input$nivel_selection == "MUNICIPAL") {
+        tags$div(
+          "Ano de atualização dos dados: 2020",
+          style = "position: absolute; bottom: 0px; left: 0; right: 0; font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 10px; border-radius: 0 0 3px 3px; text-align: center; box-sizing: border-box;"
+        )
+      } else {
+        NULL
+      }
       div(
         class = "custom-box box-danger",
         style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
         h4("Nº de UBS"),
-        h3(format_number(total_ubs))
+        h3(format_number(total_ubs)),
+        caption
       )
     })
 
     output$summary_box_4 <- renderUI({
       total_gestantes <- sum(filtered_data()[["GESTANTES SUSDEPENDENTES ESTIMADAS/ANO"]], na.rm = TRUE)
+      # Condicional: se o nível for MUNICIPAL, define o caption; senão, fica NULL
+      caption <- if (!is.null(input$nivel_selection) && input$nivel_selection == "MUNICIPAL") {
+        tags$div(
+          "Ano de atualização dos dados: 2020",
+          style = "position: absolute; bottom: 0px; left: 0; right: 0; font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 10px; border-radius: 0 0 3px 3px; text-align: center; box-sizing: border-box;"
+        )
+      } else {
+        NULL
+      }
       div(
         class = "custom-box box-warning",
         style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
         h4("Gestantes SUSdependentes estimadas/ano"),
-        h3(format_number(ceiling(total_gestantes)))
+        h3(format_number(round(total_gestantes, 0))),
+        caption
       )
+    })
+
+    output$municipal_extras <- renderUI({
+      if(input$nivel_selection != "MUNICIPAL") return(NULL)
+
+      # Condição: se o usuário selecionou supervisão (analisar_muni_sp = "SIM")
+      # OU se o filtro secundário for "SÃO PAULO", então não exibe o box de Cobertura ESF.
+      if((!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") ||
+         (!is.null(input$secondary_filter) && input$secondary_filter == "SÃO PAULO")) {
+        fluidRow(
+          column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_1")))),
+          column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_3"))))
+        )
+      } else {
+        fluidRow(
+          column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_1")))),
+          column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_2")))),
+          column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("extra_summary_box_3"))))
+        )
+      }
     })
 
     # Caixas resumo extras para nível MUNICIPAL
     output$extra_summary_box_1 <- renderUI({
       req(input$nivel_selection == "MUNICIPAL")
-      data <- filtered_data()
-      metric <- round(mean(data$`COBERTURA ANS %`, na.rm = TRUE), 2)
-      div(
-        class = "custom-box box-primary",
-        style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
-        h4("Cobertura ANS (%)"),
-        h3(format_number(metric))
-      )
+      if (!is.null(input$secondary_filter) && input$secondary_filter == "SÃO PAULO") {
+        total_sp <- data_list$total_sp
+        metric <- as.numeric(gsub(",", ".", total_sp$`COBERTURA ANS %`)) # virgula por ponto pra nao dar NA
+
+        metric_fmt <- format(round(metric, 1), nsmall = 1, decimal.mark = ",") # sempre 1 casa decimal
+        div(
+          class = "custom-box box-primary",
+          style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
+          h4("Cobertura ANS (%)"),
+          h3(format_number(metric_fmt)),
+          tags$div(
+            "Ano de atualização dos dados: 2023",
+            style = "position: absolute; bottom: 1px; left: 10px; left: 0; right: 0;font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 6px; border-radius: 3px;"
+          )
+        )
+      } else {
+        data <- filtered_data()
+        metric <- round(mean(data$`COBERTURA ANS %`, na.rm = TRUE), 1)
+        metric_fmt <- format(round(metric, 1), nsmall = 1, decimal.mark = ",")
+        div(
+          class = "custom-box box-primary",
+          style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
+          h4("Cobertura ANS (%)"),
+          h3(format_number(metric_fmt)),
+          tags$div(
+            "Ano de atualização dos dados: 2023",
+            style = "position: absolute; bottom: 1px; left: 10px; left: 0; right: 0;font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 6px; border-radius: 3px;"
+          )
+        )
+      }
     })
 
+    # Box que originalmente mostra Cobertura ESF (%)
     output$extra_summary_box_2 <- renderUI({
       req(input$nivel_selection == "MUNICIPAL")
+      if (!is.null(input$secondary_filter) && input$secondary_filter == "SÃO PAULO") {
+        return(NULL)
+      }
       data <- filtered_data()
-      metric <- round(mean(data$`COBERTURA ESF %`, na.rm = TRUE), 2)
+      metric <- round(mean(data$`COBERTURA ESF %`, na.rm = TRUE), 1)
+      metric_fmt <- format(round(metric, 1), nsmall = 1, decimal.mark = ",")  # sempre 1 casa decimal
       div(
         class = "custom-box box-success",
         style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
         h4("Cobertura ESF (%)"),
-        h3(format_number(metric))
+        h3(format_number(metric_fmt)),
+        tags$div(
+          "Ano de atualização dos dados: 2020",
+          style = "position: absolute; bottom: 1px; left: 10px; left: 0; right: 0;font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 6px; border-radius: 3px;"
+        )
       )
     })
 
+    # Box original de Cobertura AB (%)
     output$extra_summary_box_3 <- renderUI({
       req(input$nivel_selection == "MUNICIPAL")
-      data <- filtered_data()
-      metric <- round(mean(data$`COBERTURA AB %`, na.rm = TRUE), 2)
-      div(
-        class = "custom-box box-warning",
-        style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
-        h4("Cobertura AB (%)"),
-        h3(format_number(metric))
-      )
+      if (!is.null(input$secondary_filter) && input$secondary_filter == "SÃO PAULO") {
+        total_sp <- data_list$total_sp
+        metric <- as.numeric(gsub(",", ".", total_sp$`COBERTURA AB %`))
+        metric_fmt <- format(round(metric, 1), nsmall = 1, decimal.mark = ",")  # sempre 1 casa decimal
+        div(
+          class = "custom-box box-warning",
+          style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
+          h4("Cobertura AB (%)"),
+          h3(format_number(metric_fmt)),
+          tags$div(
+            "Ano de atualização dos dados: 2020",
+            style = "position: absolute; bottom: 1px; left: 10px; left: 0; right: 0;font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 6px; border-radius: 3px;"
+          )
+        )
+      } else {
+        data <- filtered_data()
+        metric <- round(mean(data$`COBERTURA AB %`, na.rm = TRUE), 1)
+        metric_fmt <- format(round(metric, 1), nsmall = 1, decimal.mark = ",")
+        div(
+          class = "custom-box box-warning",
+          style = "height:125px; display:flex; flex-direction:column; justify-content:center; align-items:center;",
+          h4("Cobertura AB (%)"),
+          h3(format_number(metric_fmt)),
+          tags$div(
+            "Ano de atualização dos dados: 2020",
+            style = "position: absolute; bottom: 1px; left: 10px; left: 0; right: 0;font-size: 12px; color: #FFFFFF; background-color: #0A1E3C; padding: 3px 6px; border-radius: 3px;"
+          )
+        )
+      }
     })
 
     # Renderização dos cards com gráficos, usando a função auxiliar build_plot_card
@@ -538,9 +829,9 @@ mod_rras_aps_server <- function(id, data_list) {
       if(input$nivel_selection == "MUNICIPAL") return(NULL)
       if(input$nivel_selection == "DRS" && !is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
         # Força uma altura menor para os gráficos de coordenadoria de saúde
-        build_plot_card("Nascidos Vivos", "plot_nascidos_vivos", plot_data(), caption = "Ano: 2023", height_override = 400)
+        build_plot_card("Nascidos vivos", "plot_nascidos_vivos", plot_data(), caption = "Ano: 2023", height_override = 400)
       } else {
-        build_plot_card("Nascidos Vivos", "plot_nascidos_vivos", plot_data(), caption = "Ano: 2023")
+        build_plot_card("Nascidos vivos", "plot_nascidos_vivos", plot_data(), caption = "Ano: 2023")
       }
     })
     output$card_plot_ubs <- renderUI({
@@ -548,9 +839,9 @@ mod_rras_aps_server <- function(id, data_list) {
       if(input$nivel_selection == "MUNICIPAL") return(NULL)
       if(input$nivel_selection == "DRS" && !is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
         # Força uma altura menor para os gráficos de coordenadoria de saúde
-        build_plot_card("Número de UBS", "plot_ubs", plot_data(), caption = "Ano: 2020", height_override = 400)
+        build_plot_card("UBS", "plot_ubs", plot_data(), caption = "Ano: 2020", height_override = 400)
       } else {
-        build_plot_card("Número de UBS", "plot_ubs", plot_data(), caption = "Ano: 2020")
+        build_plot_card("UBS", "plot_ubs", plot_data(), caption = "Ano: 2020")
       }
     })
     output$card_plot_gestantes_susdependentes <- renderUI({
@@ -567,14 +858,14 @@ mod_rras_aps_server <- function(id, data_list) {
     output$card_plot_nascidos_susdependentes_estadual <- renderUI({
       req(input$nivel_selection)
       if(input$nivel_selection != "ESTADUAL") return(NULL)
-      build_plot_card("Nascidos Vivos SUSdependentes", "plot_nascidos_susdependentes_estado", plot_data(), caption = "Ano: 2020")
+      build_plot_card("Nascidos vivos SUSdependentes", "plot_nascidos_susdependentes_estado", plot_data(), caption = "Ano: 2020")
     })
 
     # Para níveis RRAS (- RRAS 6), DRS ou REGIÃO DE SAÚDE
     output$card_plot_nascidos_susdependentes_outros <- renderUI({
       req(input$nivel_selection)
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
-      build_plot_card("Nascidos Vivos SUSdependentes", "plot_nascidos_susdependentes_outros", plot_data(), caption = "Ano: 2020")
+      build_plot_card("Nascidos vivos SUSdependentes", "plot_nascidos_susdependentes_outros", plot_data(), caption = "Ano: 2020")
     })
 
     # Para níveis RRAS 6
@@ -583,9 +874,9 @@ mod_rras_aps_server <- function(id, data_list) {
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
       if(input$nivel_selection == "DRS" && !is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
         # Força uma altura menor para os gráficos de coordenadoria de saúde
-        build_plot_card("Nascidos Vivos SUSdependentes", "plot_nascidos_susdependentes_rras6", plot_data(), caption = "Ano: 2020", height_override = 400)
+        build_plot_card("Nascidos vivos SUSdependentes", "plot_nascidos_susdependentes_rras6", plot_data(), caption = "Ano: 2020", height_override = 400)
       } else {
-        build_plot_card("Nascidos Vivos SUSdependentes", "plot_nascidos_susdependentes_rras6", plot_data(), caption = "Ano: 2020")
+        build_plot_card("Nascidos vivos SUSdependentes", "plot_nascidos_susdependentes_rras6", plot_data(), caption = "Ano: 2020")
       }
     })
 
@@ -593,7 +884,7 @@ mod_rras_aps_server <- function(id, data_list) {
     output$card_plot_cobertura_ans <- renderUI({
       req(input$nivel_selection)
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
-      build_plot_card("Cobertura ANS (%)", "plot_cobertura_ans", plot_data(), caption = "Ano: 2020")
+      build_plot_card("Cobertura ANS (%)", "plot_cobertura_ans", plot_data(), caption = "Ano: 2023")
     })
     output$card_plot_cobertura_esf <- renderUI({
       req(input$nivel_selection)
@@ -612,7 +903,7 @@ mod_rras_aps_server <- function(id, data_list) {
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
       if(input$nivel_selection == "DRS" && !is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
         # Força uma altura menor para os gráficos de coordenadoria de saúde
-        build_plot_card("Cobertura ANS (%)", "plot_cobertura_ans_rras6", plot_data(), caption = "Ano: 2020", height_override = 400)
+        build_plot_card("Cobertura ANS (%)", "plot_cobertura_ans_rras6", plot_data(), caption = "Ano: 2023", height_override = 400)
       } else {
         build_plot_card("Cobertura ANS (%)", "plot_cobertura_ans_rras6", plot_data(), caption = "Ano: 2020")
       }
@@ -641,7 +932,7 @@ mod_rras_aps_server <- function(id, data_list) {
       } else {
         cat_var <- if(input$nivel_selection == "ESTADUAL") "RRAS" else "MUNICIPAL"
       }
-      build_bar_plot(data = plot_data(), var_numeric = "Nº DE NASCIDOS VIVOS", var_category = cat_var, force_vertical = force_v)
+      build_bar_plot(data = plot_data_main(), var_numeric = "Nº DE NASCIDOS VIVOS", var_category = cat_var, force_vertical = force_v)
     })
     output$plot_ubs <- plotly::renderPlotly({
       req(input$nivel_selection)
@@ -655,7 +946,7 @@ mod_rras_aps_server <- function(id, data_list) {
       } else {
         cat_var <- if(input$nivel_selection == "ESTADUAL") "RRAS" else "MUNICIPAL"
       }
-      build_bar_plot(data = plot_data(), var_numeric = "Nº DE UBS", var_category = cat_var, force_vertical = force_v)
+      build_bar_plot(data = plot_data_main(), var_numeric = "Nº DE UBS", var_category = cat_var, force_vertical = force_v)
     })
     output$plot_gestantes_susdependentes <- plotly::renderPlotly({
       req(input$nivel_selection)
@@ -669,7 +960,7 @@ mod_rras_aps_server <- function(id, data_list) {
       } else {
         cat_var <- if(input$nivel_selection == "ESTADUAL") "RRAS" else "MUNICIPAL"
       }
-      build_bar_plot(data = plot_data(), var_numeric = "GESTANTES SUSDEPENDENTES ESTIMADAS/ANO", var_category = cat_var, force_vertical = force_v)
+      build_bar_plot(data = plot_data_main(), var_numeric = "GESTANTES SUSDEPENDENTES ESTIMADAS/ANO", var_category = cat_var, force_vertical = force_v)
     })
     output$plot_nascidos_susdependentes_estado <- plotly::renderPlotly({
       req(input$nivel_selection)
@@ -689,7 +980,7 @@ mod_rras_aps_server <- function(id, data_list) {
       } else {
         cat_var <- if(input$nivel_selection == "ESTADUAL") "RRAS" else "MUNICIPAL"
       }
-      build_bar_plot(data = plot_data(), var_numeric = "NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO", var_category = cat_var)
+      build_bar_plot(data = plot_data_main(), var_numeric = "NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO", var_category = cat_var)
     })
     # RRAS 6
     output$plot_nascidos_susdependentes_rras6 <- plotly::renderPlotly({
@@ -711,17 +1002,17 @@ mod_rras_aps_server <- function(id, data_list) {
     output$plot_cobertura_ans <- plotly::renderPlotly({
       req(input$nivel_selection)
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
-      build_bar_plot(data = plot_data(), var_numeric = "COBERTURA ANS %", var_category = "MUNICIPAL", is_percentage = TRUE)
+      build_bar_plot(data = plot_data_main(), var_numeric = "COBERTURA ANS %", var_category = "MUNICIPAL", is_percentage = TRUE)
     })
     output$plot_cobertura_esf <- plotly::renderPlotly({
       req(input$nivel_selection)
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
-      build_bar_plot(data = plot_data(), var_numeric = "COBERTURA ESF %", var_category = "MUNICIPAL", is_percentage = TRUE)
+      build_bar_plot(data = plot_data_cov(), var_numeric = "COBERTURA ESF %", var_category = "MUNICIPAL", is_percentage = TRUE)
     })
     output$plot_cobertura_ab <- plotly::renderPlotly({
       req(input$nivel_selection)
       if(!(input$nivel_selection %in% c("RRAS", "DRS", "REGIÃO DE SAÚDE"))) return(NULL)
-      build_bar_plot(data = plot_data(), var_numeric = "COBERTURA AB %", var_category = "MUNICIPAL", is_percentage = TRUE)
+      build_bar_plot(data = plot_data_main(), var_numeric = "COBERTURA AB %", var_category = "MUNICIPAL", is_percentage = TRUE)
     })
     # GRÁFICOS DE COBERTURA (para RRAS 6)
     output$plot_cobertura_ans_rras6 <- plotly::renderPlotly({

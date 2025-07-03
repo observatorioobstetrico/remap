@@ -33,10 +33,11 @@
   background-color: #0A1E3C !important;
   color: white !important;
 }
-/* Oculta apenas o ícone "bars"
+/* Oculta apenas o ícone "bars"*/
 .nav-link[data-widget="pushmenu"] i.fas.fa-bars {
-  display: none !important;
-}*/
+  display: block !important;
+  z-index: 1040 !important; /* acima de .div-titulo (100) */
+}
 /* Remove todo o link de toggle da sidebar
 .nav-link[data-widget="pushmenu"] {
   display: none !important;
@@ -48,6 +49,10 @@
   color: black !important;
   border-radius: 5px;
   font-weight: bold;
+  padding-left: 0.5rem !important;
+  margin-left: 0.5px;
+  /* permite quebra de linha no Chrome/Firefox */
+  font-size: 67% !important;
 }
 .nav-sidebar .nav-link.active {
   background-color: #0A1E3C !important;
@@ -59,7 +64,7 @@
 }
 .sidebar-menu .nav-item .nav-treeview .nav-item a {
   margin-left: 9px;
-  font-size: 80%;
+  font-size: 67%;
   background-color: white !important;
   color: #777 !important;
 }
@@ -70,6 +75,7 @@
 .sidebar-menu .nav-item .nav-treeview .nav-item .nav-link.active {
   background-color: #0A1E3C !important;
   color: white !important;
+  padding-left: 0.5rem !important;
 }
 
 /* Selectize */
@@ -194,7 +200,7 @@
 .panel-title-custom {
   background-color: #0A1E3C;
   color: white;
-  font-size: 35px;
+  font-size: 34px;
   font-weight: bold;
   text-align: center;
   margin-bottom: 19px;
@@ -280,7 +286,38 @@
   border-left: 3px solid #0A1E3C;
 }
 
+/* torna o header sticky */
+.reactable .rt-thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+}
 
+/* torna o footer (linha de total) sticky */
+.reactable .rt-tfoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: #fff;
+}
 
+/* Seção de cabeçalhos personalizados */
+.section-header {
+  background-color: #0A1E3C !important;
+  color: white !important;
+  display: block;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 0 auto 10px;     /* centraliza horizontalmente e margem inferior */
+  max-width: calc(100% - 40px);
+  box-sizing: border-box !important;
+  font-size: 14px !important;
+  text-align: center;
+}
 
-
+/* Remover negrito dos rótulos das opções de filtros (checkbox/radio) */
+.shiny-options-group .checkbox label,
+.shiny-options-group .radio label {
+  font-weight: normal !important;
+}

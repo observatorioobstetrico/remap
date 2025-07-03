@@ -8,6 +8,7 @@ License: What license is it under?
 Imports: 
     attempt,
     bs4Dash,
+    rlang,
     config,
     magrittr,
     dplyr,
@@ -20,16 +21,23 @@ Imports:
     shiny,
     shinycssloaders,
     shinyWidgets,
-    pkgload
-VignetteBuilder: 
-    knitr
-Suggests:
-    knitr,
-    rmarkdown
+    shinyalert,
+    shinyjs,
+    stringr,
+    pkgload,
+    reactable,
+    readr,
+    janitor,
+    gtsummary,
+    highcharter,
+    gt,
+    openxlsx,
+    tibble,
+    tidyr
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
-Depends: 
-    R (>= 2.10)
-URL: https://github.com/Soju-JC/shinyremap
+RoxygenNote: 7.3.2
+Depends:
+  R (>= 3.5.0)
+URL: https://github.com/observatorioobstetrico/remap

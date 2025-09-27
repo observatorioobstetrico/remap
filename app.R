@@ -5,4 +5,4 @@
 pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 options( "golem.app.prod" = TRUE)
 shinyremap::run_app() # add parameters here (if any)
-remap::run_app() # add parameters here (if any)
+# remap::run_app() # add parameters here (if any)

@@ -13,3 +13,16 @@ dev
 man
 vignettes
 tests
+
+# --- ignore: dados crus em inst/app/data e subpastas ---
+^inst/app/data/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
+^inst/app/data/.*/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
+
+# se você tiver dados crus também em data_obitos (dentro de inst/app/data), ignore-os:
+^inst/app/data/data_obitos/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
+^inst/app/data/data_obitos/.*/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
+
+# --- allow (opcional): caches .rda e assets necessários ---
+!^inst/app/data/_rda/
+!^inst/app/data/_rda/.*\.rda$
+!^inst/app/www/

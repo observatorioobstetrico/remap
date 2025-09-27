@@ -25,8 +25,8 @@ mod_analise_cruzada_ui <- function(id) {
           div(
             style = "max-height: 168vh; overflow-y: auto; padding-right: 10px;",
 
-            tags$p(style = "font-size: 19px; font-style: italic;",
-                   "Obs.: os dados de 2024 são preliminares."),
+            tags$p(style = "font-size 16px; font-style: italic;",
+                   "Obs: os dados de 2024 são preliminares."),
 
             hr(),
 

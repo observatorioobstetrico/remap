@@ -18,6 +18,40 @@
 ## either re-run this function, call golem::set_golem_name(), or don't forget
 ## to change the name in the app_sys() function in app_config.R /!\
 ##
+
+
+
+
+
+
+
+# ## Fixar CRAN (imune a qualquer perfil que tente mudar depois)
+# local({
+#   r <- getOption("repos"); if (is.null(r)) r <- c()
+#   r["CRAN"] <- "https://cloud.r-project.org"
+#   options(repos = r)
+# })
+#
+# ## Garantir pacotes de apoio
+# if (!requireNamespace("golem", quietly = TRUE)) install.packages("golem")
+# if (!requireNamespace("usethis", quietly = TRUE)) install.packages("usethis")
+#
+# ## dockerfiler (o golem pode pedir)
+# if (!requireNamespace("dockerfiler", quietly = TRUE)) {
+#   install.packages("dockerfiler")  # está no CRAN
+# }
+#
+# ## Criar README apenas se não existir (idempotente):
+# if (!file.exists("README.Rmd")) {
+#   golem::use_readme_rmd(open = FALSE)
+# } else {
+#   message("README.Rmd já existe — pulando criação. (Use overwrite = TRUE se quiser recriar.)")
+# }
+
+
+
+
+
 golem::fill_desc(
   pkg_name = "shinyremap", # The name of the golem package containing the app (typically lowercase, no underscore or periods)
   pkg_title = "PKG_TITLE", # What the Package Does (One Line, Title Case, No Period)

@@ -229,27 +229,30 @@
   font-weight: bold;
 }
 
-/* Etc. se quiser remover scrolls fixos, etc. */
+/* Mantém seus títulos/headers próprios sempre abaixo da navbar real */
 .div-titulo {
   position: fixed;
-  top: 56px;
-  width: 93.75%;
-  background-color: white;
-  z-index: 100;
-  height: fit-content;
+  top: calc(var(--navbar-height) + 8px) !important;  /* antes: 56px */
+  z-index: 1040; /* fica abaixo do 1050 da navbar que você definiu */
 }
+
+/* Se .div-dependente também precisa seguir o topo da navbar: */
 .div-dependente {
-  top: 56px;
+  position: relative; /* se não for fixed, deixe relative */
+  margin-top: calc(var(--navbar-height) + 16px) !important;
+  /* ou, se for fixed: top: calc(var(--navbar-height) + 16px) !important; */
 }
+
+/* MEXER NO TAMANHO DO BLOCO DA BRAND (IMPORTANTE PARA AJUSTAR COM A LARGURA DA SIDEBAR) */
 .layout-navbar-fixed .wrapper .main-sidebar:hover .brand-link {
-  width: 300px !important;
+  width: 370px !important;
   transition: none !important;
 }
 .layout-navbar-fixed .wrapper .brand-link {
   overflow: hidden;
   position: fixed;
   top: 0;
-  width: 300px !important;
+  width: 370px !important;
   transition: none !important;
   z-index: 1035;
 }
@@ -321,3 +324,564 @@
 .shiny-options-group .radio label {
   font-weight: normal !important;
 }
+
+/* ===========================
+   SIDEBAR: tamanhos de fonte
+   (aplique no final do styles.scss)
+   =========================== */
+
+/* Itens de menu (nível principal) — só o texto dentro do <p> */
+.nav-sidebar .nav-link p {
+  font-size: 1rem !important;          /* ~16px; ajuste a gosto (ex.: 1.05rem) */
+  line-height: 1.2 !important;         /* melhora a legibilidade */
+}
+
+/* Submenus (nav-treeview) — ligeiramente menor que o principal */
+.nav-sidebar .nav-treeview > .nav-item > .nav-link > p {
+  font-size: 0.95rem !important;       /* ~15px */
+  line-height: 1.2 !important;
+}
+
+/* (Opcional) Espaçamento vertical para acomodar a fonte maior */
+.nav-sidebar .nav-link {
+  padding-top: .37rem !important;
+  padding-bottom: .37rem !important;
+  /* mantém a indentação de submenus confortável */
+}
+.nav-sidebar .nav-treeview .nav-link {
+  padding-left: 1.75rem !important;    /* recuo do subitem */
+}
+
+/* (Opcional) Preserve espaçamento dos ícones e do caret (">") */
+.nav-sidebar .nav-link > .nav-icon,
+.nav-sidebar .nav-link .right {
+  margin-right: .5rem !important;
+}
+
+/* =========================================================
+   NOVOS ESTILOS (HOME + BRAND TOPO + SETA LATERAL)
+   Acrescente AO FINAL do seu styles.css
+   ========================================================= */
+
+/* --- BRAND no topo (navbar) — fixo e sempre visível --- */
+.brand-title-left {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+}
+.brand-logo-top {
+  max-height: 28px;
+  width: auto;
+  display: inline-block;
+}
+.brand-text-top {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .2px;
+}
+
+/* Evita que qualquer 'auto-hide' do AdminLTE sobreponha a brand do topo */
+.main-header.navbar .navbar-brand,
+.main-header.navbar .brand-title-left {
+  position: relative;
+  z-index: 1050;
+}
+
+/* --- HERO (Home) --- */
+.home-hero {
+  width: 100%;
+  max-width: 1100px;
+  margin: 30px auto 10px auto;
+  padding: 20px 10px;
+  text-align: center;
+}
+.home-hero-logo {
+  max-width: 520px;
+  width: 60vw;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.25));
+}
+.home-hero-title {
+  margin-top: 12px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0A1E3C;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+.home-hero-subtitle {
+  font-size: 1.1rem;
+  color: #2d3a4d;
+  margin-top: 2px;
+}
+
+/* --- GRID de cards na Home --- */
+.home-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 18px auto 6px auto;
+  max-width: 1300px;
+}
+@media (max-width: 1400px) {
+  .home-card-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 992px) {
+  .home-card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+  .home-card-grid { grid-template-columns: 1fr; }
+}
+
+.home-card {
+  border-radius: 10px;
+  padding: 18px 16px;
+  background: #ffffff;
+  border-left: 4px solid #0A1E3C; /* similar à sua .blue2 */
+  box-shadow: 0 6px 16px rgba(10,30,60,.10);
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: start;
+  transition: transform .15s ease-out, box-shadow .15s ease-out;
+}
+.home-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(10,30,60,.18);
+}
+.home-card-icon {
+  font-size: 38px;
+  line-height: 38px;
+  color: #0A1E3C;
+  margin-top: 2px;
+}
+.home-card-text h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0A1E3C;
+  margin: 0 0 4px 0;
+}
+.home-card-text p {
+  margin: 0;
+  color: #515257;
+  font-size: .98rem;
+}
+
+/* --- CALL TO ACTION + seta apontando para a sidebar --- */
+.home-cta {
+  position: relative;
+  max-width: 1100px;
+  margin: 10px auto 6px auto;
+  padding: 8px 12px;
+  text-align: center;
+}
+.home-cta p {
+  display: inline-block;
+  font-size: 1.05rem;
+  color: #2d3a4d;
+  background: #f2f5f9;
+  border: 1px solid #e1e6ee;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.home-cta .cta-strong {
+  font-weight: 800;
+  color: #0A1E3C;
+}
+
+/* A seta em si (ícone e pseudo-seta desenhada por CSS) */
+.sidebar-arrow {
+  position: fixed;
+  /* Posiciona próximo à sidebar (à esquerda), abaixo do topo do navbar */
+  left: 20px;              /* ajuste fino conforme sua UI */
+  top: 120px;              /* idem */
+  z-index: 1045;
+  width: 60px;
+  height: 60px;
+  pointer-events: none;    /* evita capturar cliques */
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: arrowFadeIn .8s ease-out .2s forwards, arrowPulse 1.6s ease-in-out .9s infinite;
+}
+
+/* Caso a sidebar esteja expandida (hover fixo), manter a seta visível e estável */
+.sidebar-open .sidebar-arrow { opacity: 1; transform: none; }
+
+.sidebar-arrow i {
+  font-size: 28px;
+  color: #0A1E3C;
+}
+
+/* Pseudo-elemento para desenhar uma seta curvada/“doodle” simples */
+.sidebar-arrow::after {
+  content: "";
+  position: absolute;
+  left: 26px;
+  top: -10px;
+  width: 48px;
+  height: 48px;
+  border: 3px solid #0A1E3C;
+  border-color: #0A1E3C transparent transparent #0A1E3C; /* quina em curva */
+  border-radius: 50% 0 0 0;
+  transform: rotate(10deg);
+  opacity: .8;
+}
+
+/* Animações */
+@keyframes arrowFadeIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes arrowPulse {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(-5px); }
+}
+
+/* Responsividade da seta: em telas muito pequenas, mova um pouco para baixo */
+@media (max-width: 768px) {
+  .sidebar-arrow { top: 148px; left: 14px; }
+}
+
+/* --- Texto informativo (bloco final) --- */
+.home-info {
+  max-width: 1100px;
+  margin: 12px auto 30px auto;
+  font-size: 1.02rem;
+  text-align: justify;
+  line-height: 1.55;
+  padding: 16px 18px;
+  border: 1px solid #e1e6ee;
+  border-radius: 8px;
+  background-color: #f9fbfd;
+}
+
+/* --- Compatibilidade com seus estilos prévios (navbar/brand/sidebar) --- */
+/* Garantir que a 'brand-link' da sidebar não se sobreponha à brand do topo */
+.layout-navbar-fixed .wrapper .brand-link {
+  z-index: 1035; /* já estava no seu CSS; mantemos abaixo do 1050 do topo */
+}
+
+/* Opção: reduzir um pouco a sombra do panel-title para ficar mais discreto na Home */
+.panel-title-custom {
+  box-shadow: 4px 4px 9px rgba(0, 0, 0, 0.25);
+}
+
+/* Opcional: elevar leve contraste do header das cards */
+.card-header {
+  filter: saturate(1.05);
+}
+
+/* =========================================================
+   NAVBAR (TOPO): aumentar altura e estilizar brand (imagem + texto)
+   ========================================================= */
+
+/* =========================================================
+   Sincronizar altura da NAVBAR e da faixa de BRAND da SIDEBAR
+   ========================================================= */
+
+/* 1) Defina a altura-alvo da navbar (a mesma que você já usa) */
+:root {
+  --navbar-height: 80px;   /* ajuste se mudar a navbar */
+  /* “teto” de altura para cards em modo compacto */
+  --card-minh-desktop: 160px;  /* antes era 220px */
+  --card-minh-compact: 130px;  /* telas baixas */
+  --card-pad-y: 16px;          /* topo/baixo dos cards (antes ~26px) */
+  --card-pad-x: 16px;          /* esquerda/direita */
+  --grid-gap: 14px;            /* distância entre cards */
+}
+
+
+/* 2) Navbar com a altura desejada (você já tem algo assim) */
+.main-header.navbar { min-height: var(--navbar-height) !important; }
+.main-sidebar .brand-link {
+  height: var(--navbar-height) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+/* 4) Logotipo dentro da brand da sidebar (ajuste fino do tamanho) */
+.main-sidebar .brand-link .brand-image {
+  max-height: calc(var(--navbar-height) - 16px) !important; /* 8px de respiro em cima/baixo */
+  margin: 0 0 0 .25rem !important;                          /* ajuste fino lateral */
+}
+
+/* Segurança extra, caso o tema re-aplique .img-circle em outro lugar */
+.main-sidebar .brand-link .brand-image.img-circle {
+  border-radius: 0 !important;
+}
+
+/* 5) (Opcional) Texto ao lado do logo na faixa da sidebar, se existir */
+.main-sidebar .brand-link .brand-text {
+  line-height: 1 !important;
+  font-size: 1.05rem;
+  color: #fff !important;
+}
+
+/* 6) Quando a navbar é fixa, alinhe o início do conteúdo da sidebar
+      para começar logo após a faixa de brand (sem sobrar lacuna) */
+.layout-navbar-fixed .wrapper .main-sidebar {
+  margin-top: 0 !important; /* evita deslocamentos automáticos */
+}
+.layout-navbar-fixed .wrapper .main-sidebar .sidebar {
+  margin-top: var(--navbar-height) !important; /* empurra o menu para baixo da brand */
+}
+
+/* 7) (Opcional) Se você fixou a brand da sidebar com position:fixed, mantenha consistente */
+.layout-navbar-fixed .wrapper .brand-link {
+  top: 0 !important;
+  height: var(--navbar-height) !important; /* chave para não sobrar “faixa branca” */
+}
+
+/* Garante prioridade da marca do topo sobre quaisquer elementos superpostos */
+.main-header.navbar .navbar-brand {
+  position: relative;
+  z-index: 1050;
+}
+
+/* =========================================================
+   HOME: layout de página (CTA no “rodapé visual”)
+   ========================================================= */
+
+/* A Home ocupa a altura útil da viewport menos a navbar */
+.home-page{
+  display:flex; flex-direction:column;
+  min-height: calc(100svh - var(--navbar-height)); /* svh lida melhor no mobile */
+}
+
+/* HERO (logo central) */
+.home-hero {
+  width: 100%;
+  max-width: 1100px;
+  margin: 30px auto 10px auto;
+  padding: 10px;
+  text-align: center;
+}
+.home-hero-logo {
+  max-width: 500px;  /* logo maior */
+  width: 62vw;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.25));
+}
+
+/* =========================================================
+   SEÇÕES (títulos + divisores)
+   ========================================================= */
+
+.section-title {
+  max-width: 1100px;
+  margin: 18px auto 4px auto;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0A1E3C;
+  letter-spacing: .2px;
+}
+.section-divider {
+  max-width: 1100px;
+  margin: 0 auto 8px auto;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(10,30,60,0.25), rgba(10,30,60,0.08), transparent);
+  border: 0;
+}
+
+/* Texto explicativo “sem caixa” (parte da página) */
+.home-info.home-info--plain {
+  max-width: 1100px;
+  margin: 10px auto 14px auto;
+  font-size: 1.04rem;
+  text-align: justify;
+  line-height: 1.58;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: #2b313b;
+}
+
+/* =========================================================
+   CARDS: 3 grandes, centralizados, responsivos
+   ========================================================= */
+
+.home-card-grid.home-card-grid--three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(340px, 1fr));
+  gap: 18px;
+  margin: 8px auto 8px auto;
+  max-width: 1400px;
+  padding: 0 10px;
+}
+@media (max-width: 1200px) {
+  .home-card-grid.home-card-grid--three {
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .home-card-grid.home-card-grid--three {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-card.home-card--lg {
+  border-radius: 12px;
+  padding: 26px 22px;
+  background: #ffffff;
+  border-left: 5px solid #0A1E3C;
+  box-shadow: 0 8px 22px rgba(10,30,60,.12);
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 18px;
+  align-items: start;
+  min-height: 220px;           /* mais alto */
+  transition: transform .16s ease-out, box-shadow .16s ease-out;
+}
+.home-card.home-card--lg:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(10,30,60,.18);
+}
+.home-card-icon {
+  font-size: 48px;   /* maior para destacar */
+  line-height: 48px;
+  color: #0A1E3C;
+  margin-top: 4px;
+}
+.home-card-text h4 {
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #0A1E3C;
+  margin: 0 0 8px 0;
+}
+.home-card-text p {
+  margin: 0;
+  color: #3d4657;
+  font-size: 1.04rem;
+  line-height: 1.55;
+}
+
+/*tamanho dos cards*/
+/* Grid entre-cards um pouco mais “junto” */
+.home-card-grid.home-card-grid--three,
+.home-card-grid.home-card-grid--two {
+  gap: var(--grid-gap) !important;
+}
+
+/* Altura e respiro internos dos cards (global p/ suas variações) */
+.home-card{
+  padding: var(--card-pad-y) var(--card-pad-x) !important;
+}
+.home-card.home-card--lg{
+  min-height: var(--card-minh-desktop) !important;
+  grid-template-columns: 60px 1fr; /* ícone ligeiramente menor que 72px */
+  gap: 12px;
+  box-shadow: 0 6px 16px rgba(10,30,60,.10);
+}
+
+/* Ícone e tipografia um pouco mais compactos (sem perder legibilidade) */
+.home-card-icon{
+  font-size: 36px; line-height: 36px; margin-top: 2px;
+}
+.home-card-text h4{
+  font-size: 1.08rem; margin: 0 0 4px 0;
+}
+.home-card-text p{
+  font-size: .98rem; line-height: 1.45; margin: 0; /* remove “sobra” no fundo */
+}
+
+/* Garante que o “fundo do card” não crie vão extra */
+.home-card > *:last-child,
+.home-card .home-card-text > *:last-child { margin-bottom: 0 !important; }
+
+/* =========================================================
+   CTA no fundo + seta inline
+   ========================================================= */
+
+/* CTA sempre “no rodapé visual” da Home */
+.home-cta-row{
+  margin-top:auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: sticky;   /* <— mantém visível mesmo que haja rolagem */
+  bottom: 0;          /* gruda no rodapé visual */
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.85) 30%, #fff 85%);
+  padding-top: 8px;
+}
+.home-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+}
+.home-cta p {
+  margin: 0;
+  font-size: 1.06rem;
+  text-align: center;
+  color: #2d3a4d;
+}
+.home-cta .cta-strong {
+  font-weight: 800;
+  color: #0A1E3C;
+}
+.home-cta-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-cta-arrow i {
+  font-size: 26px;
+  color: #0A1E3C;
+  animation: arrowNudge 1.6s ease-in-out infinite;
+}
+@keyframes arrowNudge {
+  0%, 100% { transform: translateX(0);   opacity: .95; }
+  50%      { transform: translateX(-6px); opacity: 1;  }
+}
+
+/* =========================================================
+   GRID 2 (2 cards centralizados) — “Dados” e “Transparência”
+   ========================================================= */
+.home-card-grid.home-card-grid--two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(340px, 1fr));
+  gap: 18px;
+  /* largura exata para duas colunas, centralizada */
+  max-width: calc(2 * 480px);   /* ~ largura confortável de cartão + gap */
+  width: 100%;
+  margin: 10px auto 6px auto;   /* centraliza o container */
+  padding: 0 10px;
+  justify-items: stretch;       /* cartões ocupam a largura da coluna */
+}
+
+@media (max-width: 1100px) {
+  .home-card-grid.home-card-grid--two {
+    max-width: 100%;
+  }
+}
+@media (max-width: 720px) {
+  .home-card-grid.home-card-grid--two {
+    grid-template-columns: 1fr; /* empilha em telas estreitas */
+  }
+}
+
+/* ==== OFFSET DO CONTEÚDO PARA NAVBAR FIXA ==== */
+/* Garante que o conteúdo comece logo abaixo da navbar de altura customizada */
+.layout-navbar-fixed .wrapper .content-wrapper {
+  margin-top: var(--navbar-height) !important;   /* usa 80px do seu :root */
+}
+
+/* Um respiro opcional para os títulos logo após a barra */
+.layout-navbar-fixed .wrapper .content-wrapper .content-header,
+.layout-navbar-fixed .wrapper .content-wrapper .content {
+  padding-top: 8px !important; /* ajuste fino (8–16px) */
+}
+
+/* Se houver âncoras/rolagem até títulos, evita que fiquem "sob" a navbar */
+.layout-navbar-fixed .wrapper .content-wrapper *[id] {
+  scroll-margin-top: calc(var(--navbar-height) + 12px);
+}
+
+

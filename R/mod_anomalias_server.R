@@ -1,98 +1,113 @@
 # R/mod_anomalias_server.R
-#' Server: Anomalias Congênitas
+#' Server: Anomalias Congênitas (SP)
 #' @noRd
 mod_anomalias_server <- function(id, data_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # 1) Atualiza slider apenas com anos ≥2001
     observe({
       anos_disp <- sort(unique(data_list$sinasc$ano[data_list$sinasc$ano >= 2001]))
-      updateSliderInput(
-        session, "anos",
-        min   = min(anos_disp),
-        max   = max(anos_disp),
-        value = c(min(anos_disp), max(anos_disp))
-      )
+      updateSliderInput(session, "anos",
+                        min=min(anos_disp), max=max(anos_disp),
+                        value=c(min(anos_disp), max(anos_disp)))
     })
 
-    # 2) UI de filtros locais
     output$filtros_locais <- renderUI({
       req(input$nivel)
-      switch(input$nivel,
-             "Nacional"  = NULL,
-             "Estadual"  = selectInput(
-               ns("estado"), "Selecione o Estado:",
-               choices = sort(unique(data_list$sinasc$uf))
-             ),
-             "Municipal" = tagList(
-               selectInput(
-                 ns("estado_mun"), "Selecione o Estado:",
-                 choices = sort(unique(data_list$sinasc$uf))
-               ),
-               selectizeInput(
-                 ns("municipio"), "Selecione o Município:",
-                 choices = NULL
-               )
-             )
+      # switch(
+      #   input$nivel,
+      #   "ESTADUAL" = span(class = "text-muted", ""),
+      #   "RRAS"     = selectInput(
+      #     ns("rras"), "Selecione a RRAS:",
+      #     choices  = data_list$rras_choices,
+      #     selected = data_list$rras_choices[1]
+      #   ),
+      #   "DRS"      = selectInput(
+      #     ns("drs"), "Selecione a DRS:",
+      #     choices  = data_list$drs_choices,
+      #     selected = data_list$drs_choices[1]
+      #   ),
+      #   "REGIÃO DE SAÚDE" = selectInput(
+      #     ns("regiao_de_saude"), "Selecione a Região de Saúde:",
+      #     choices  = data_list$regiao_saude_choices,
+      #     selected = data_list$regiao_saude_choices[1]
+      #   ),
+      #   "MUNICIPAL" = selectInput(
+      #     ns("municipio_sp"), "Selecione o Município:",
+      #     choices  = data_list$municipios_sp_choices,
+      #     selected = data_list$municipios_sp_choices[1]
+      #   )
+      # )
+      switch(
+        input$nivel,
+        "ESTADUAL" = span(class = "text-muted", ""),
+
+        "RRAS" = shinyWidgets::pickerInput(
+          inputId = ns("rras"),
+          label = "Selecione a RRAS:",
+          choices  = data_list$rras_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$rras_choices[1]
+        ),
+
+        "DRS" = shinyWidgets::pickerInput(
+          inputId = ns("drs"),
+          label = "Selecione a DRS:",
+          choices  = data_list$drs_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$drs_choices[1]
+        ),
+
+        "REGIÃO DE SAÚDE" = shinyWidgets::pickerInput(
+          inputId = ns("regiao_de_saude"),
+          label = "Selecione a Região de Saúde:",
+          choices  = data_list$regiao_saude_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$regiao_saude_choices[1]
+        ),
+
+        "MUNICIPAL" = shinyWidgets::pickerInput(
+          inputId = ns("municipio_sp"),
+          label = "Selecione o Município:",
+          choices  = data_list$municipios_sp_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$municipios_sp_choices[1]
+        )
       )
     })
 
-    # 3) Popula municípios para Municipal
-    observeEvent(input$estado_mun, {
-      choices <- data_list$tabela_aux_municipios %>%
-        filter(uf == input$estado_mun) %>%
-        pull(municipio) %>%
-        unique() %>%
-        sort()
-      updateSelectizeInput(session, "municipio", choices = choices)
-    })
+    filtra_local <- function(df) {
+      switch(
+        input$nivel,
+        "ESTADUAL"        = df,
+        "RRAS"            = { req(length(input$rras) > 0); dplyr::filter(df, rras == input$rras) },
+        "DRS"             = { req(length(input$drs) > 0); dplyr::filter(df, drs == input$drs) },
+        "REGIÃO DE SAÚDE" = { req(length(input$regiao_de_saude) > 0); dplyr::filter(df, regiao_de_saude == input$regiao_de_saude) },
+        "MUNICIPAL"       = { req(length(input$municipio_sp) > 0); dplyr::filter(df, municipio_sp == input$municipio_sp) }
+      )
+    }
 
-    # 4) Renderiza tabela com Nascidos, Sem informação, N° anomalias e % anomalias
     output$tabela_an <- reactable::renderReactable({
       df_tab <- data_list$sinasc %>%
-        filter(ano >= input$anos[1], ano <= input$anos[2]) %>%
-        {
-          if (input$nivel == "Estadual") {
-            filter(., uf == input$estado)
-          } else if (input$nivel == "Municipal") {
-            filter(., uf == input$estado_mun, municipio == input$municipio)
-          } else {
-            .
-          }
-        } %>%
-        # marca anomalias só a partir de 2001
-        mutate(
-          anomalia = ifelse(ano < 2001, NA, as.numeric(anomalia)),
-          total    = total_nascidos - faltante_anomalia
+        dplyr::filter(ano >= input$anos[1], ano <= input$anos[2]) %>%
+        filtra_local() %>%
+        dplyr::mutate(anomalia = dplyr::if_else(ano < 2001, NA_real_, as.numeric(anomalia))) %>%
+        dplyr::group_by(ano) %>%
+        dplyr::summarise(
+          nascidos  = sum(total_nascidos,    na.rm = TRUE),
+          faltantes = sum(faltante_anomalia, na.rm = TRUE),
+          n_anom    = sum(anomalia,          na.rm = TRUE),
+          .groups   = "drop"
         ) %>%
-        group_by(ano) %>%
-        summarise(
-          nascidos     = sum(total_nascidos,    na.rm = TRUE),
-          faltantes    = sum(faltante_anomalia, na.rm = TRUE),
-          n_anom       = sum(anomalia,          na.rm = TRUE),
-          .groups      = "drop"
-        ) %>%
-        # formata % anomalias com vírgula
-        mutate(
-          `% anomalias` = paste0(
-            format(
-              round(n_anom / (nascidos - faltantes) * 100, 2),
-              big.mark     = ".",   # separador de milhar
-              decimal.mark = ",",   # separador decimal
-              scientific   = FALSE
-            ),
-            "%"
-          )
-        )
+        dplyr::mutate(`% anomalias` = paste0(
+          format(round(n_anom / pmax(nascidos - faltantes, 1) * 100, 2),
+                 big.mark=".", decimal.mark=",", scientific=FALSE), "%"))
 
       validate(need(nrow(df_tab) > 0, "Sem registros para os filtros selecionados."))
-
       reactable::reactable(
         df_tab,
         defaultColDef = reactable::colDef(align = "center"),
-        defaultSorted   = "ano",
-        defaultSortOrder= "desc",
+        defaultSorted = "ano", defaultSortOrder = "desc",
         columns = list(
           ano           = reactable::colDef(name = "Ano"),
           nascidos      = reactable::colDef(name = "N° de nascimentos"),
@@ -100,45 +115,30 @@ mod_anomalias_server <- function(id, data_list) {
           n_anom        = reactable::colDef(name = "N° anomalias"),
           `% anomalias` = reactable::colDef(name = "% anomalias")
         ),
-        highlight  = TRUE,
-        bordered   = TRUE,
-        pagination = FALSE
+        highlight = TRUE, bordered = TRUE, pagination = FALSE
       )
-    })
+    }) %>% bindCache(input$nivel, input$rras, input$drs, input$regiao_de_saude, input$municipio_sp, input$anos, cache = "app")
 
-    # 5) Renderiza gráfico interativo de % anomalias
     output$grafico_an <- plotly::renderPlotly({
       df_plot <- data_list$sinasc %>%
-        filter(ano >= input$anos[1], ano <= input$anos[2]) %>%
-        {
-          if (input$nivel == "Estadual") {
-            filter(., uf == input$estado)
-          } else if (input$nivel == "Municipal") {
-            filter(., uf == input$estado_mun, municipio == input$municipio)
-          } else {
-            .
-          }
-        } %>%
-        mutate(
-          anomalia = ifelse(ano < 2001, NA, as.numeric(anomalia)),
-          total    = total_nascidos - faltante_anomalia
-        ) %>%
-        group_by(ano) %>%
-        summarise(
+        dplyr::filter(ano >= input$anos[1], ano <= input$anos[2]) %>%
+        filtra_local() %>%
+        dplyr::mutate(anomalia = dplyr::if_else(ano < 2001, NA_real_, as.numeric(anomalia))) %>%
+        dplyr::group_by(ano) %>%
+        dplyr::summarise(
           nascidos  = sum(total_nascidos,    na.rm = TRUE),
           faltantes = sum(faltante_anomalia, na.rm = TRUE),
           n_anom    = sum(anomalia,          na.rm = TRUE),
           .groups   = "drop"
         ) %>%
-        mutate(pct = n_anom / (nascidos - faltantes))
+        dplyr::mutate(pct = n_anom / pmax(nascidos - faltantes, 1))
 
-      validate(need(nrow(df_plot) > 0, "Sem dados para exibir o gráfico com esses filtros."))
+      validate(need(nrow(df_plot) > 0, "Sem dados para exibir o gráfico."))
 
       p <- ggplot2::ggplot(
         df_plot,
         ggplot2::aes(
-          x    = ano,
-          y    = pct,
+          x = ano, y = pct,
           text = paste0(
             "Ano: ", ano, "<br>",
             "Nascimentos: ", format(nascidos, big.mark=".", decimal.mark=",", scientific=FALSE), "<br>",
@@ -159,13 +159,9 @@ mod_anomalias_server <- function(id, data_list) {
           axis.text.y      = ggplot2::element_text(size=10)
         ) +
         ggplot2::scale_x_continuous(breaks = df_plot$ano) +
-        ggplot2::scale_y_continuous(
-          labels = function(x) format(x*100, big.mark=".", decimal.mark=",", scientific=FALSE)
-        )
+        ggplot2::scale_y_continuous(labels = function(x) format(x*100, big.mark=".", decimal.mark=",", scientific=FALSE))
 
-      plotly::ggplotly(p, tooltip = "text") %>%
-        plotly::layout(hovermode = "x unified")
-    })
-
+      plotly::ggplotly(p, tooltip = "text") %>% plotly::layout(hovermode = "x unified")
+    }) %>% bindCache(input$nivel, input$rras, input$drs, input$regiao_de_saude, input$municipio_sp, input$anos, cache = "app")
   })
 }

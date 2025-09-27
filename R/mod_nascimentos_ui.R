@@ -1,8 +1,13 @@
 # R/mod_nascimentos_ui.R
-#' UI: Nascimentos
+#' UI: Indicadores Obstétricos → Nascimentos (SP)
+#'
+#' Nível de análise: ESTADUAL (SP fixo) → RRAS → DRS → REGIÃO DE SAÚDE → MUNICIPAL
+#' Layout: filtros à esquerda; tabela e gráfico (meia tela cada) à direita.
+#'
 #' @noRd
 mod_nascimentos_ui <- function(id) {
   ns <- shiny::NS(id)
+
   tagList(
     # Título
     fluidRow(
@@ -12,9 +17,9 @@ mod_nascimentos_ui <- function(id) {
       )
     ),
 
-    # Único row: filtros à esquerda, conteúdo (tabela + gráfico) à direita
+    # Layout: filtros (col-4) | conteudo (col-8)
     fluidRow(
-      # Coluna de filtros — altura total de viewport
+      # -------------------- COLUNA DE FILTROS --------------------
       column(
         width = 4,
         bs4Dash::box(
@@ -22,52 +27,71 @@ mod_nascimentos_ui <- function(id) {
           status      = "primary",
           solidHeader = TRUE,
           width       = NULL,
-          height      = "109vh",               # ocupa 100% da altura da tela
+          height      = "109vh",
           div(
             style = "overflow-y:auto; padding:10px; height: 100%;",
+
+            # Observação
             tags$p(
-              style = "font-size:19px;font-style:italic;",
+              style = "font-size:16px;font-style:italic;",
               "Obs: os dados de 2024 são preliminares."
             ),
+
+            # # Última atualização (se existir no global)
+            # uiOutput(ns("ultima_atualizacao")),
+
             hr(),
+
+            # Nível
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
               ns("nivel"), NULL,
-              choices = c("Nacional", "Estadual", "Municipal")
+              choices  = c("ESTADUAL", "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+              selected = "ESTADUAL"
             ),
+
+            # Localidade dependente do nível
             uiOutput(ns("filtros_locais")),
+
             hr(),
+
+            # Intervalo de anos
             tags$h5(class = "section-header", "Selecione o intervalo de anos:"),
             sliderInput(
               ns("anos"), NULL,
-              min   = 1996,
-              max   = 2024,
+              min   = 1996,   # será sobrescrito no server
+              max   = 2024,   # será sobrescrito no server
               value = c(1996, 2024),
-              sep   = "",
-              step  = 1
+              step  = 1, sep = ""
             )
           )
         )
       ),
 
-      # Coluna de conteúdo: empilha tabela e gráfico
+      # -------------------- COLUNA DE CONTEÚDO --------------------
       column(
         width = 8,
-        # Box da tabela — metade da altura
+        # Tabela (metade superior)
         bs4Dash::box(
-          title       = "Tabela Nascimentos",
+          title       = "Tabela de Nascimentos",
           status      = "info",
           solidHeader = TRUE,
           width       = NULL,
           height      = "50vh",
+          # estilos de cabeçalho/rodapé fixos (opcional)
+          tags$style(HTML("
+             .reactable .rt-table {position: relative;}
+             .reactable .rt-thead {position: sticky; top: 0; z-index: 2; background: white;}
+             .reactable .rt-tr.-footer {position: sticky; bottom: 0; z-index: 2; background: white;}
+          ")),
           div(
             style = "height:100%; overflow-y:auto; position:relative;",
             reactable::reactableOutput(ns("tabela_nascimentos"), height = "100%")
           )
         ),
-        # Box do gráfico — outra metade da altura
+        # Gráfico (metade inferior)
         bs4Dash::box(
-          title       = "Gráfico Nascimentos",
+          title       = "Gráfico de Nascimentos",
           status      = "info",
           solidHeader = TRUE,
           width       = NULL,

@@ -1,219 +1,266 @@
-# R/mod_robson_cesareas_server.R
-#' Server: Robson & Cesáreas
-#'
-#' @param id módulo id
-#' @param data_list lista de dados (load_indicadores_data())
-#' @import shiny
-#' @importFrom dplyr filter group_by summarise left_join arrange
-#' @importFrom tidyr pivot_wider
-#' @import reactable
-#' @import plotly
+# R/mod_robson_cesarias_server.R
+#' Server: Robson & Cesáreas (SP)
 #' @noRd
-#' @export
 mod_robson_cesareas_server <- function(id, data_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # 1) Inicializa o numericInput de ano (dados >= 2014)
-    observe({
-      anos_disp <- sort(unique(data_list$robson_cesarea$ano))
-      anos_disp <- anos_disp[anos_disp >= 2014]
+    # 1) Semeia limites iniciais UMA ÚNICA VEZ (não depende de input$anos)
+    observeEvent(TRUE, {
+      anos_total <- sort(unique(data_list$robson_cesarea$ano))
+      anos_total <- anos_total[anos_total >= 2014]
+
       updateNumericInput(
         session, "fixedAno",
-        value = max(anos_disp),
-        min   = min(anos_disp),
-        max   = max(anos_disp)
+        value = max(anos_total),
+        min   = min(anos_total),
+        max   = max(anos_total)
       )
-    })
 
-    # 2) UI dinâmica de filtros locais
+      updateSliderInput(
+        session, "anos",
+        min = min(anos_total),
+        max = max(anos_total),
+        value = c(min(anos_total), max(anos_total)),
+        step = 1
+      )
+    }, once = TRUE)  # <- roda só uma vez.
+
+    # 2) Ao trocar nível/local, recalcula limites mas preserva o intervalo escolhido (sem depender de input$anos)
+    observeEvent(
+      list(input$nivel, input$rras, input$drs, input$regiao_de_saude, input$municipio_sp),
+      {
+        df_loc <- filtra_local(data_list$robson_cesarea)
+        anos_disp <- sort(unique(df_loc$ano))
+        anos_disp <- anos_disp[anos_disp >= 2014]
+        if (length(anos_disp) == 0) return(NULL)
+
+        new_min <- min(anos_disp); new_max <- max(anos_disp)
+        cur <- isolate(input$anos)  # não cria dependência reativa.
+        if (is.null(cur)) cur <- c(new_min, new_max)
+        new_val <- c(max(new_min, cur[1]), min(new_max, cur[2]))
+
+        updateSliderInput(session, "anos", min = new_min, max = new_max, value = new_val, step = 1)
+        updateNumericInput(session, "fixedAno",
+                           min = new_min, max = new_max,
+                           value = min(max(new_val[2], new_min), new_max))
+      },
+      ignoreInit = TRUE
+    )
+
     output$filtros_locais <- renderUI({
       req(input$nivel)
-      switch(input$nivel,
-             "Nacional"  = NULL,
-             "Estadual"  = selectInput(
-               ns("estado"), "Selecione o Estado:",
-               choices = sort(unique(data_list$robson_cesarea$uf))
-             ),
-             "Municipal" = tagList(
-               selectInput(
-                 ns("estado_mun"), "Selecione o Estado:",
-                 choices = sort(unique(data_list$robson_cesarea$uf))
-               ),
-               selectizeInput(
-                 ns("municipio"), "Selecione o Município:",
-                 choices = NULL
-               )
-             )
+      switch(
+        input$nivel,
+        "ESTADUAL" = span(class = "text-muted", ""),
+
+        "RRAS" = shinyWidgets::pickerInput(
+          inputId = ns("rras"),
+          label = "Selecione a RRAS:",
+          choices  = data_list$rras_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$rras_choices[1]
+        ),
+
+        "DRS" = shinyWidgets::pickerInput(
+          inputId = ns("drs"),
+          label = "Selecione a DRS:",
+          choices  = data_list$drs_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$drs_choices[1]
+        ),
+
+        "REGIÃO DE SAÚDE" = shinyWidgets::pickerInput(
+          inputId = ns("regiao_de_saude"),
+          label = "Selecione a Região de Saúde:",
+          choices  = data_list$regiao_saude_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$regiao_saude_choices[1]
+        ),
+
+        "MUNICIPAL" = shinyWidgets::pickerInput(
+          inputId = ns("municipio_sp"),
+          label = "Selecione o Município:",
+          choices  = data_list$municipios_sp_choices,
+          options = list("live-search" = TRUE),
+          selected = data_list$municipios_sp_choices[1]
+        )
       )
     })
 
-    # 3) Popula municípios quando Estado é escolhido
-    observeEvent(input$estado_mun, {
-      choices <- data_list$tabela_aux_municipios %>%
-        filter(uf == input$estado_mun) %>%
-        pull(municipio) %>%
-        unique() %>%
-        sort()
-      updateSelectizeInput(session, "municipio", choices = choices)
-    })
+    # --- CORREÇÃO: filtra_local robusto a inputs vazios e usando %in% (mantém lógica de seleção) ---
+    filtra_local <- function(df) {
+      niv <- input$nivel
+      if (is.null(niv)) return(df[0, , drop = FALSE])
 
-    # 4) Base filtrada: aplica filtros de nível, grupo e ANO fixo
+      switch(
+        niv,
+        "ESTADUAL" = df,
+
+        "RRAS" = {
+          val <- input$rras
+          if (is.null(val) || length(val) == 0) return(df[0, , drop = FALSE])
+          dplyr::filter(df, rras %in% val)
+        },
+
+        "DRS" = {
+          val <- input$drs
+          if (is.null(val) || length(val) == 0) return(df[0, , drop = FALSE])
+          dplyr::filter(df, drs %in% val)
+        },
+
+        "REGIÃO DE SAÚDE" = {
+          val <- input$regiao_de_saude
+          if (is.null(val) || length(val) == 0) return(df[0, , drop = FALSE])
+          dplyr::filter(df, regiao_de_saude %in% val)
+        },
+
+        "MUNICIPAL" = {
+          val <- input$municipio_sp
+          if (is.null(val) || length(val) == 0) return(df[0, , drop = FALSE])
+          dplyr::filter(df, municipio_sp %in% val)
+        }
+      )
+    }
+    # --- FIM DA CORREÇÃO ---
+
+    # 3) Base filtrada: ano único para "Todos"; intervalo p/ grupo específico
     base_filtrada <- reactive({
-      req(input$fixedAno)
-      df <- data_list$robson_cesarea
-
-      # filtro de local
-      df <- switch(input$nivel,
-                   "Estadual"  = filter(df, uf == input$estado),
-                   "Municipal" = filter(df, uf == input$estado_mun, municipio == input$municipio),
-                   df
-      )
-
-      # filtro de grupo e ano
-      if (input$grupo == "Todos") {
-        filter(df, ano == input$fixedAno)
+      df <- data_list$robson_cesarea %>% filtra_local()
+      if (identical(input$grupo, "Todos")) {
+        req(input$fixedAno)
+        dplyr::filter(df, ano == input$fixedAno)
       } else {
-        filter(
+        req(input$anos)
+        dplyr::filter(
           df,
-          grupo_robson_aux == input$grupo,
-          ano == input$fixedAno
+          ano >= input$anos[1], ano <= input$anos[2],
+          grupo_robson_aux == input$grupo
         )
       }
-    })
+    }) %>% bindCache(
+      input$nivel, input$rras, input$drs, input$regiao_de_saude,
+      input$municipio_sp, input$grupo, input$fixedAno, input$anos,
+      cache = "app"
+    )
 
-    # 5) Renderiza tabela (mesmo código teste)
+    # 4) Tabela
     output$tabela_rc <- reactable::renderReactable({
       df <- base_filtrada()
 
-      # sumarização conforme grupo
-      if (input$grupo == "Todos") {
-        rob <- df %>% group_by(grupo_robson_aux) %>% summarise(nascidos = sum(nascidos), .groups="drop")
-        ces <- df %>% group_by(grupo_robson_aux, tipo_parto) %>% summarise(n = sum(nascidos), .groups="drop") %>%
-          pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
-        if ("vaginal" %in% names(ces)) ces <- select(ces, -"vaginal")
-        rob_ces <- left_join(rob, ces, by = "grupo_robson_aux")
+      if (identical(input$grupo, "Todos")) {
+        rob <- df %>% dplyr::group_by(grupo_robson_aux) %>%
+          dplyr::summarise(nascidos = sum(nascidos), .groups="drop")
+        ces <- df %>% dplyr::group_by(grupo_robson_aux, tipo_parto) %>%
+          dplyr::summarise(n = sum(nascidos), .groups="drop") %>%
+          tidyr::pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
+        if ("vaginal" %in% names(ces)) ces <- dplyr::select(ces, -"vaginal")
+        rob_ces <- dplyr::left_join(rob, ces, by = "grupo_robson_aux")
       } else {
-        # para grupo específico, a soma por ano único
-        rob <- df %>% group_by(ano) %>% summarise(nascidos = sum(nascidos), .groups="drop")
-        ces <- df %>% group_by(ano, tipo_parto) %>% summarise(n = sum(nascidos), .groups="drop") %>%
-          pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
-        if ("vaginal" %in% names(ces)) ces <- select(ces, -"vaginal")
-        rob_ces <- left_join(rob, ces, by = "ano")
+        rob <- df %>% dplyr::group_by(ano) %>%
+          dplyr::summarise(nascidos = sum(nascidos), .groups="drop")
+        ces <- df %>% dplyr::group_by(ano, tipo_parto) %>%
+          dplyr::summarise(n = sum(nascidos), .groups="drop") %>%
+          tidyr::pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
+        if ("vaginal" %in% names(ces)) ces <- dplyr::select(ces, -"vaginal")
+        rob_ces <- dplyr::left_join(rob, ces, by = "ano")
       }
 
-      # calcula faltante, cesarea e % cesáreas
-      rob_ces <- rob_ces %>%
-        mutate(
-          faltante = if ("faltante" %in% names(.)) faltante else 0,
-          cesarea  = if ("cesarea" %in% names(.)) cesarea else 0,
-          `% cesáreas` = paste0(
-            format(
-              round(cesarea / (nascidos - faltante) * 100, 2),
-              big.mark=".", decimal.mark=","
-            ), "%"
-          )
-        )
-
-      # ordena fator para exibir "faltante" ao final
-      ord_levels <- rob_ces$grupo_robson_aux %>%
-        unique() %>%
-        setdiff("faltante") %>%
-        as.numeric() %>%
-        sort() %>%
-        as.character()
-      ord_levels <- c(ord_levels, "faltante")
+      # Garante colunas
+      if (!"faltante" %in% names(rob_ces)) rob_ces$faltante <- 0
+      if (!"cesarea"  %in% names(rob_ces)) rob_ces$cesarea  <- 0
 
       rob_ces <- rob_ces %>%
-        mutate(grupo_robson_aux = factor(grupo_robson_aux, levels = ord_levels)) %>%
-        arrange(grupo_robson_aux)
+        dplyr::mutate(`% cesáreas` =
+                        paste0(format(round(cesarea / pmax(nascidos - faltante, 1) * 100, 2),
+                                      big.mark=".", decimal.mark=","), "%"))
+
+      if ("grupo_robson_aux" %in% names(rob_ces)) {
+        ord_levels <- rob_ces$grupo_robson_aux %>% unique() %>%
+          setdiff("faltante") %>% as.numeric() %>% sort() %>% as.character()
+        ord_levels <- c(ord_levels, "faltante")
+        rob_ces <- rob_ces %>%
+          dplyr::mutate(grupo_robson_aux = factor(grupo_robson_aux, levels = ord_levels)) %>%
+          dplyr::arrange(grupo_robson_aux)
+      }
 
       reactable::reactable(
         rob_ces,
         defaultColDef = reactable::colDef(align = "center"),
         columns = list(
-          grupo_robson_aux = reactable::colDef(name = if (input$grupo=="Todos") "Grupo de Robson" else "Ano"),
+          grupo_robson_aux = reactable::colDef(
+            name = if (identical(input$grupo,"Todos")) "Grupo de Robson" else "Ano"
+          ),
           nascidos         = reactable::colDef(name = "N° de nascimentos"),
           cesarea          = reactable::colDef(name = "N° de cesáreas"),
           faltante         = reactable::colDef(name = "N° sem informação"),
           `% cesáreas`     = reactable::colDef(name = "% cesáreas")
         ),
-        highlight  = TRUE,
-        bordered   = TRUE,
-        pagination = FALSE
+        highlight = TRUE, bordered = TRUE, pagination = FALSE
       )
-    })
+    }) %>% bindCache(base_filtrada(), cache = "app")
 
-    # 6) Renderiza gráfico (mesmo código teste)
+    # 5) Gráfico
     output$grafico_rc <- plotly::renderPlotly({
       df <- base_filtrada()
 
-      if (input$grupo == "Todos") {
-        rob <- df %>% group_by(grupo_robson_aux) %>% summarise(nascidos = sum(nascidos), .groups="drop")
-        ces <- df %>% group_by(grupo_robson_aux, tipo_parto) %>% summarise(n = sum(nascidos), .groups="drop") %>%
-          pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
-        if ("vaginal" %in% names(ces)) ces <- select(ces, -"vaginal")
-        rob_ces <- left_join(rob, ces, by = "grupo_robson_aux") %>%
-          mutate(
-            faltante = if ("faltante" %in% names(.)) faltante else 0,
-            cesarea  = if ("cesarea" %in% names(.)) cesarea else 0
-          )
-        ord_levels <- rob_ces$grupo_robson_aux %>%
-          unique() %>%
-          setdiff("faltante") %>%
-          as.numeric() %>%
-          sort() %>%
-          as.character()
+      if (identical(input$grupo, "Todos")) {
+        rob <- df %>% dplyr::group_by(grupo_robson_aux) %>%
+          dplyr::summarise(nascidos = sum(nascidos), .groups="drop")
+        ces <- df %>% dplyr::group_by(grupo_robson_aux, tipo_parto) %>%
+          dplyr::summarise(n = sum(nascidos), .groups="drop") %>%
+          tidyr::pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
+        if ("vaginal" %in% names(ces)) ces <- dplyr::select(ces, -"vaginal")
+        rob_ces <- dplyr::left_join(rob, ces, by = "grupo_robson_aux")
+
+        if (!"faltante" %in% names(rob_ces)) rob_ces$faltante <- 0
+        if (!"cesarea"  %in% names(rob_ces)) rob_ces$cesarea  <- 0
+
+        ord_levels <- rob_ces$grupo_robson_aux %>% unique() %>%
+          setdiff("faltante") %>% as.numeric() %>% sort() %>% as.character()
         ord_levels <- c(ord_levels, "faltante")
 
         plot_df <- rob_ces %>%
-          mutate(
-            pct = (cesarea / (nascidos - faltante)) * 100,
+          dplyr::mutate(
+            pct = (cesarea / pmax(nascidos - faltante, 1)) * 100,
             grupo_robson_aux = factor(grupo_robson_aux, levels = ord_levels)
-          ) %>%
-          filter(grupo_robson_aux != "faltante")
+          ) %>% dplyr::filter(grupo_robson_aux != "faltante")
 
         p <- ggplot2::ggplot(
           plot_df,
           ggplot2::aes(
-            x = grupo_robson_aux,
-            y = pct,
+            x = grupo_robson_aux, y = pct,
             text = paste0(
               "Grupo: ", grupo_robson_aux, "<br>",
-              "% cesáreas: ",
-              formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."),
-              "%"
+              "% cesáreas: ", formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."), "%"
             )
           )
         ) +
           ggplot2::geom_col(fill = "#37399a", color = "black") +
           ggplot2::labs(x = "Grupo de Robson", y = "% de cesáreas") +
           ggplot2::theme_linedraw()
+
       } else {
-        rob <- df %>% group_by(ano) %>% summarise(nascidos = sum(nascidos), .groups="drop")
-        ces <- df %>% group_by(ano, tipo_parto) %>% summarise(n = sum(nascidos), .groups="drop") %>%
-          pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
-        if ("vaginal" %in% names(ces)) ces <- select(ces, -"vaginal")
-        rob_ces <- left_join(rob, ces, by = "ano") %>%
-          mutate(
-            faltante = if ("faltante" %in% names(.)) faltante else 0,
-            cesarea  = if ("cesarea" %in% names(.)) cesarea else 0
-          )
+        rob <- df %>% dplyr::group_by(ano) %>%
+          dplyr::summarise(nascidos = sum(nascidos), .groups="drop")
+        ces <- df %>% dplyr::group_by(ano, tipo_parto) %>%
+          dplyr::summarise(n = sum(nascidos), .groups="drop") %>%
+          tidyr::pivot_wider(names_from = tipo_parto, values_from = n, values_fill = 0)
+        if ("vaginal" %in% names(ces)) ces <- dplyr::select(ces, -"vaginal")
+        rob_ces <- dplyr::left_join(rob, ces, by = "ano")
+
+        if (!"faltante" %in% names(rob_ces)) rob_ces$faltante <- 0
+        if (!"cesarea"  %in% names(rob_ces)) rob_ces$cesarea  <- 0
 
         plot_df <- rob_ces %>%
-          mutate(pct = (cesarea / (nascidos - faltante)) * 100)
+          dplyr::mutate(pct = (cesarea / pmax(nascidos - faltante, 1)) * 100)
 
         p <- ggplot2::ggplot(
           plot_df,
           ggplot2::aes(
-            x = as.factor(ano),
-            y = pct,
-            text = paste0(
-              "Ano: ", ano, "<br>",
-              "% cesáreas: ",
-              formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."),
-              "%"
-            )
+            x = as.factor(ano), y = pct,
+            text = paste0("Ano: ", ano, "<br>",
+                          "% cesáreas: ", formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."), "%")
           )
         ) +
           ggplot2::geom_col(fill = "#37399a", color = "black") +
@@ -221,8 +268,7 @@ mod_robson_cesareas_server <- function(id, data_list) {
           ggplot2::theme_linedraw()
       }
 
-      plotly::ggplotly(p, tooltip = "text") %>%
-        plotly::layout(hovermode = "x unified")
-    })
+      plotly::ggplotly(p, tooltip = "text") %>% plotly::layout(hovermode = "x unified")
+    }) %>% bindCache(base_filtrada(), cache = "app")
   })
 }

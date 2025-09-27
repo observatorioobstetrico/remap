@@ -68,28 +68,54 @@ mod_series_obitos_server <- function(id, data_list) {
                choices_rras <- rras_vals[ord]
 
                # 5) finalmente, passa para o selectizeInput
-               selectizeInput(
-                 ns("rras"), "RRAS:",
+               # selectizeInput(
+               #   ns("rras"), "RRAS:",
+               #   choices = choices_rras,
+               #   options = list(placeholder = "Selecione")
+               # )
+               shinyWidgets::pickerInput(
+                 inputId = ns("rras"),
+                 label = "RRAS:",
                  choices = choices_rras,
-                 options = list(placeholder = "Selecione")
+                 options = list("live-search" = TRUE)
                )
              },
-             "drs" = selectizeInput(
-               ns("drs"), "DRS:",
+             # "drs" = selectizeInput(
+             #   ns("drs"), "DRS:",
+             #   choices = sort(unique(data_list$drs_choices$drs)),
+             #   options = list(placeholder = "Selecione")
+             # )
+             "drs" = shinyWidgets::pickerInput(
+               inputId = ns("drs"),
+               label = "DRS:",
                choices = sort(unique(data_list$drs_choices$drs)),
-               options = list(placeholder = "Selecione")
+               options = list("live-search" = TRUE)
              ),
-             "regiao_saude" = selectizeInput(
-               ns("regiao_saude"), "Região de Saúde:",
+             # "regiao_saude" = selectizeInput(
+             #   ns("regiao_saude"), "Região de Saúde:",
+             #   choices = sort(unique(data_list$regiao_saude_choices$regiao_de_saude)),
+             #   options = list(placeholder = "Selecione")
+             # )
+             "regiao_saude" = shinyWidgets::pickerInput(
+               inputId = ns("regiao_saude"),
+               label = "Região de Saúde:",
                choices = sort(unique(data_list$regiao_saude_choices$regiao_de_saude)),
-               options = list(placeholder = "Selecione")
+               options = list("live-search" = TRUE)
              ),
-             "municipal" = selectizeInput(
-               ns("municipio"), "Município:",
+             # "municipal" = selectizeInput(
+             #   ns("municipio"), "Município:",
+             #   choices = sort(data_list$municipios_choices$municipio[
+             #     data_list$municipios_choices$uf == "São Paulo"
+             #   ]),
+             #   options = list(placeholder = "Selecione")
+             # )
+             "municipal" = shinyWidgets::pickerInput(
+               inputId = ns("municipio"),
+               label = "Município:",
                choices = sort(data_list$municipios_choices$municipio[
                  data_list$municipios_choices$uf == "São Paulo"
                ]),
-               options = list(placeholder = "Selecione")
+               options = list("live-search" = TRUE)
              ),
              NULL
       )
@@ -107,18 +133,32 @@ mod_series_obitos_server <- function(id, data_list) {
              "nacional" = NULL,
 
              #------ REGIONAL ------
-             "regional" = selectizeInput(
-               ns("regiao2"), "Região do país (comparação):",
+             # "regional" = selectizeInput(
+             #   ns("regiao2"), "Região do país (comparação):",
+             #   choices = sort(unique(data_list$bloco6$regiao)),
+             #   options = list(placeholder = "Selecione"),
+             #   selected = character(0)
+             # )
+             "regional" = shinyWidgets::pickerInput(
+               inputId = ns("regiao2"),
+               label = "Região do país (comparação):",
                choices = sort(unique(data_list$bloco6$regiao)),
-               options = list(placeholder = "Selecione"),
+               options = list("live-search" = TRUE),
                selected = character(0)
              ),
 
              #------ ESTADUAL ------
-             "estadual" = selectizeInput(
-               ns("estado2"), "Estado (comparação):",
+             # "estadual" = selectizeInput(
+             #   ns("estado2"), "Estado (comparação):",
+             #   choices = estados_ordenados,
+             #   options = list(placeholder = "Selecione"),
+             #   selected = character(0)
+             # )
+             "estadual" = shinyWidgets::pickerInput(
+               inputId = ns("estado2"),
+               label = "Estado (comparação):",
                choices = estados_ordenados,
-               options = list(placeholder = "Selecione"),
+               options = list("live-search" = TRUE),
                selected = character(0)
              ),
 
@@ -128,17 +168,25 @@ mod_series_obitos_server <- function(id, data_list) {
                fluidRow(
                  column(
                    6,
-                   selectizeInput(
-                     ns("estado2"), "Estado (comparação):",
+                   # selectizeInput(
+                   #   ns("estado2"), "Estado (comparação):",
+                   #   choices = estados_ordenados,
+                   #   options = list(placeholder = "Selecione"),
+                   #   selected = input$estado2
+                   # )
+                   shinyWidgets::pickerInput(
+                     inputId = ns("estado2"),
+                     label = "Estado (comparação):",
                      choices = estados_ordenados,
-                     options = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = input$estado2
                    )
                  ),
                  column(
                    6,
-                   selectizeInput(
-                     ns("macro2"), "Macrorregião (comparação):",
+                   shinyWidgets::pickerInput(
+                     inputId = ns("macro2"),
+                     label = "Macrorregião (comparação):",
                      choices = local({
                        # 1) pega vetor de strings, sem duplicatas, só do estado escolhido
                        vals <- unique(
@@ -164,7 +212,7 @@ mod_series_obitos_server <- function(id, data_list) {
                        # 4) junta: numéricos primeiro, depois o resto
                        c(with_num, without_num)
                      }),
-                     options  = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = character(0)
                    )
                  )
@@ -183,10 +231,17 @@ mod_series_obitos_server <- function(id, data_list) {
                ),
                column(
                  6,
-                 selectizeInput(
-                   ns("drs2"), "DRS (comparação):",
+                 # selectizeInput(
+                 #   ns("drs2"), "DRS (comparação):",
+                 #   choices = sort(unique(data_list$drs_choices$drs)),
+                 #   options = list(placeholder = "Selecione"),
+                 #   selected = character(0)
+                 # )
+                 shinyWidgets::pickerInput(
+                   inputId = ns("drs2"),
+                   label = "DRS (comparação):",
                    choices = sort(unique(data_list$drs_choices$drs)),
-                   options = list(placeholder = "Selecione"),
+                   options = list("live-search" = TRUE),
                    selected = character(0)
                  )
                )
@@ -197,23 +252,31 @@ mod_series_obitos_server <- function(id, data_list) {
                fluidRow(
                  column(
                    6,
-                   selectizeInput(
-                     ns("estado2"), "Estado (comparação):",
+                   # selectizeInput(
+                   #   ns("estado2"), "Estado (comparação):",
+                   #   choices = estados_ordenados,
+                   #   options = list(placeholder = "Selecione"),
+                   #   selected = input$estado2
+                   # )
+                   shinyWidgets::pickerInput(
+                     inputId = ns("estado2"),
+                     label = "Estado (comparação):",
                      choices = estados_ordenados,
-                     options = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = input$estado2
                    )
                  ),
                  column(
                    6,
-                   selectizeInput(
-                     ns("micro2"), "Região de saúde (comparação):",
+                   shinyWidgets::pickerInput(
+                     inputId = ns("micro2"),
+                     label = "Região de saúde (comparação):",
                      choices = sort(
                        data_list$micro_r_saude_choices$r_saude[
                          data_list$micro_r_saude_choices$uf == input$estado2
                        ]
                      ),
-                     options = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = character(0)
                    )
                  )
@@ -225,23 +288,31 @@ mod_series_obitos_server <- function(id, data_list) {
                fluidRow(
                  column(
                    6,
-                   selectizeInput(
-                     ns("estado2"), "Estado (comparação):",
+                   # selectizeInput(
+                   #   ns("estado2"), "Estado (comparação):",
+                   #   choices = estados_ordenados,
+                   #   options = list(placeholder = "Selecione"),
+                   #   selected = input$estado2
+                   # )
+                   shinyWidgets::pickerInput(
+                     inputId = ns("estado2"),
+                     label = "Estado (comparação):",
                      choices = estados_ordenados,
-                     options = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = input$estado2
                    )
                  ),
                  column(
                    6,
-                   selectizeInput(
-                     ns("municipio2"), "Município (comparação):",
+                   shinyWidgets::pickerInput(
+                     inputId = ns("municipio2"),
+                     label = "Município (comparação):",
                      choices = sort(
                        data_list$municipios_choices$municipio[
                          data_list$municipios_choices$uf == input$estado2
                        ]
                      ),
-                     options = list(placeholder = "Selecione"),
+                     options = list("live-search" = TRUE),
                      selected = character(0)
                    )
                  )
@@ -586,6 +657,9 @@ mod_series_obitos_server <- function(id, data_list) {
 
     # 8.1 Número de óbitos maternos
     output$plot_n_obitos <- highcharter::renderHighchart({
+      validate(need(nrow(data_main()) > 0,
+                    "Não há dados para o período/local selecionado."))
+
       hc <- highcharter::highchart() %>%
         highcharter::hc_add_dependency("modules/series-label.js") %>%
         highcharter::hc_plotOptions(series = list(
@@ -608,35 +682,28 @@ mod_series_obitos_server <- function(id, data_list) {
         highcharter::hc_add_series(
           data = data_main(),
           type = "line",
-          highcharter::hcaes(
-            x = ano,
-            y = soma_obitos_mat_totais,
-            group = class,
-            colour = class
-          )
+          highcharter::hcaes(x = ano, y = soma_obitos_mat_totais, group = class, colour = class)
         )
 
       # Série de comparação
       if (filtros()$comparar == "Sim") {
+        validate(need(nrow(data_comp()) > 0, "Sem dados para a comparação selecionada."))
         hc <- hc %>%
           highcharter::hc_add_series(
             data = data_comp(),
             type = "line",
-            highcharter::hcaes(
-              x = ano,
-              y = soma_obitos_mat_totais,
-              group = class,
-              colour = class
-            )
+            highcharter::hcaes(x = ano, y = soma_obitos_mat_totais, group = class, colour = class)
           )
       }
 
-      hc %>%
-        highcharter::hc_tooltip(shared = TRUE, sort = TRUE)
+      hc %>% highcharter::hc_tooltip(shared = TRUE, sort = TRUE)
     })
 
     # 8.2 Razão de mortalidade materna por 100k nascidos vivos
     output$plot_rmm <- highcharter::renderHighchart({
+      validate(need(nrow(data_main_rmm()) > 0,
+                    "Não há dados para o período/local selecionado."))
+
       hc <- highcharter::highchart() %>%
         highcharter::hc_add_dependency("modules/series-label.js") %>%
         highcharter::hc_plotOptions(series = list(
@@ -654,35 +721,27 @@ mod_series_obitos_server <- function(id, data_list) {
         ) %>%
         highcharter::hc_colors(cores)
 
-      # Série principal (com RMM corrigida se aplicável)
+      # Principal (RMM corrigida se aplicável)
       hc <- hc %>%
         highcharter::hc_add_series(
           data = data_main_rmm(),
           type = "line",
-          highcharter::hcaes(
-            x = ano,
-            y = rmm,
-            group = class,
-            colour = class
-          )
+          highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
         )
 
-      # Série de comparação (com RMM corrigida se aplicável)
+      # Comparação (se houver)
       if (filtros()$comparar == "Sim") {
+        validate(need(!is.null(data_comp_rmm()) && nrow(data_comp_rmm()) > 0,
+                      "Sem dados para a comparação selecionada."))
         hc <- hc %>%
           highcharter::hc_add_series(
             data = data_comp_rmm(),
             type = "line",
-            highcharter::hcaes(
-              x = ano,
-              y = rmm,
-              group = class,
-              colour = class
-            )
+            highcharter::hcaes(x = ano, y = rmm, group = class, colour = class)
           )
       }
 
-      # Linha de referência (meta ODS) - condicional
+      # Linha de referência (meta ODS) — mantém sua lógica atual
       if (filtros()$comparar != "Sim" ||
           (filtros()$comparar == "Sim" && filtros()$mostrar_referencia == "mostrar_referencia")) {
         hc <- hc %>%
@@ -696,8 +755,7 @@ mod_series_obitos_server <- function(id, data_list) {
           )
       }
 
-      hc %>%
-        highcharter::hc_tooltip(shared = TRUE, sort = TRUE)
+      hc %>% highcharter::hc_tooltip(shared = TRUE, sort = TRUE)
     })
 
     # 8.3 % de óbitos por causas obstétricas diretas

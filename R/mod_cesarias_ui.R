@@ -1,108 +1,70 @@
 # R/mod_cesarias_ui.R
-#' UI: Partos Cesáreas
+#' UI: Partos Cesáreas (SP)
 #' @noRd
 mod_cesarias_ui <- function(id) {
   ns <- shiny::NS(id)
   tagList(
-    # Título
     fluidRow(
-      column(
-        width = 12,
-        tags$div(class="panel-title-custom","Partos Cesáreas")
-      )
+      column(12, tags$div(class="panel-title-custom","Partos Cesáreas"))
     ),
-
-    # Único row: filtros à esquerda, conteúdo (tabela + gráfico) à direita
     fluidRow(
-      # Coluna de filtros — altura total aproximada
       column(
         width = 4,
         bs4Dash::box(
-          title       = "Filtros",
-          status      = "primary",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "109vh",
+          title = "Filtros", status = "primary", solidHeader = TRUE,
+          width = NULL, height = "109vh",
           div(
-            style = "overflow-y:auto; padding:10px; height:100%;",
-
-            # Observação
-            tags$p(
-              style="font-size:19px;font-style:italic;",
-              "Obs: dados de 2024 preliminares."
-            ),
+            style="overflow-y:auto; padding:10px; height:100%;",
+            tags$p(style="font-size:16px;font-style:italic;",
+                   "Obs: os dados de 2024 são preliminares."),
             hr(),
-
-            # Nível de análise
             tags$h5(class="section-header","Selecione o nível de análise:"),
             selectInput(
               ns("nivel"), NULL,
-              choices = c("Nacional","Estadual","Municipal")
+              choices  = c("ESTADUAL","RRAS","DRS","REGIÃO DE SAÚDE","MUNICIPAL"),
+              selected = "ESTADUAL"
             ),
             uiOutput(ns("filtros_locais")),
             hr(),
-
-            # Intervalo de anos
             tags$h5(class="section-header","Selecione o intervalo de anos:"),
-            sliderInput(
-              ns("anos"), NULL,
-              min   = 1996,
-              max   = 2024,
-              value = c(1996,2024),
-              sep   = "",
-              step  = 1
-            ),
+            sliderInput(ns("anos"), NULL, min=1996, max=2024,
+                        value=c(1996,2024), sep="", step=1),
             hr(),
 
-            # Texto explicativo e fórmula
-            tags$p(
-              HTML(
-                "<strong>Definição:</strong> Parto cesárea é identificado se a variável <code>PARTO = 2</code> na base do SINASC. Casos com <code>PARTO = 9</code> (Ignorado) não são considerados no cálculo de % cesáreas."
-              )
-            ),
+            #---- Informações e opções adicionais ----
+            tags$h5(class = "section-header", "Informações adicionais:"),
+
+            tags$p(HTML(
+              "Parto cesárea é identificado se a variável <code>PARTO = 2 (Cesárea)</code> na base do <code>SINASC</code>."
+            )),
+            tags$p(HTML(
+              "Não são consideradas na <code>% cesáreas</code> os casos sem informação do tipo de parto, ou seja, se <code>PARTO = 9 (Ignorado)</code>."
+            )),
             withMathJax(
-              tags$p(
-                HTML(
-                  "<strong>Fórmula:</strong><br/>
-                  $$\\%\\ \\mathrm{cesáreas} \\;=\\;
-                  \\frac{\\mathrm{N^\\circ\\ partos\\ cesáreas}}
-                        {(\\mathrm{N^\\circ\\ nascimentos\\;–\\;N^\\circ\\ sem\\ informação})}
-                  \\times100$$"
-                )
-              )
+              tags$p(HTML(
+                "Algebricamente, a <code>porcentagem de partos cesáreas</code> é dada por:<br/>
+                $$\\%\\,\\text{cesáreas}=
+                \\frac{N^{\\text{o}}\\,\\text{partos cesáreas}}
+                {(N^{\\text{o}}\\,\\text{nascimentos}-N^{\\text{o}}\\,\\text{sem informação})}
+                \\times 100.$$"
+              ))
             )
           )
         )
       ),
-
-      # Coluna de conteúdo: tabela + gráfico
       column(
         width = 8,
-
-        # Box da tabela — metade da altura
         bs4Dash::box(
-          title       = "Tabela Partos Cesáreas",
-          status      = "info",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "50vh",
-          div(
-            style = "height:100%; overflow-y:auto; position:relative;",
-            reactable::reactableOutput(ns("tabela_pc"), height = "100%")
-          )
+          title = "Tabela Partos Cesáreas", status = "info",
+          solidHeader = TRUE, width = NULL, height = "50vh",
+          div(style = "height:100%; overflow-y:auto; position:relative;",
+              reactable::reactableOutput(ns("tabela_pc"), height = "100%"))
         ),
-
-        # Box do gráfico — outra metade da altura
         bs4Dash::box(
-          title       = "Gráfico % Partos Cesáreas",
-          status      = "info",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "50vh",
-          div(
-            style = "height:100%; overflow-y:auto; position:relative;",
-            plotly::plotlyOutput(ns("grafico_pc"), height = "100%")
-          )
+          title = "Gráfico % Partos Cesáreas", status = "info",
+          solidHeader = TRUE, width = NULL, height = "50vh",
+          div(style = "height:100%; overflow-y:auto; position:relative;",
+              plotly::plotlyOutput(ns("grafico_pc"), height = "100%"))
         )
       )
     )

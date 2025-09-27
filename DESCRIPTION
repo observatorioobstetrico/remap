@@ -1,10 +1,10 @@
-Package: remap
-Title: An Amazing Shiny App
+Package: shinyremap
+Title: PKG_TITLE
 Version: 0.0.0.9000
 Authors@R: 
-    person("firstname", "lastname", , "your@email.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: What license is it under?
+    person("AUTHOR_FIRST", "AUTHOR_LAST", , "AUTHOR@MAIL.COM", role = c("aut", "cre"))
+Description: PKG_DESC.
+License: MIT + file LICENSE
 Imports: 
     attempt,
     bs4Dash,
@@ -16,6 +16,7 @@ Imports:
     glue,
     golem,
     htmltools,
+    htmlwidgets,
     plotly,
     readxl,
     shiny,
@@ -37,7 +38,9 @@ Imports:
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends:
   R (>= 3.5.0)
 URL: https://github.com/observatorioobstetrico/remap
+Suggests: 
+    testthat (>= 3.0.0)

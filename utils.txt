@@ -1,4 +1,104 @@
+# Comandos básicos
+
 devtools::document() atualiza o namespace com seu roxygen
 devtools::load_all() recarrega o pacote
+shinyremap::run_app() roda localmente o app (caso o pacote se chamar shinyremap)
 renv::install("username/reponame") resolve renv erro instalando package do proprio rep do GitHub
+renv::update("xfun") atualiza pacote xfunc no ambiente
 golem::add_shinyappsio_file() deploy/republish
+rsconnect::showLogs(appName = "shinyremap", streaming = TRUE) validar deploy
+--------------------------------------------------------------------------------
+# Rodar caso houver alterações nos dados
+
+source("dev/build_cache_once_rda.R")
+
+
+--------------------------------------------------------------------------------
+# Verificar o bundle que será enviado para deploy
+
+preview_bundle <- function(root = ".") {
+  rsc_file <- file.path(root, ".rscignore")
+  if (!file.exists(rsc_file)) stop(".rscignore não encontrado em: ", normalizePath(root))
+  # lista de todos os arquivos (sem diretórios)
+  all <- list.files(root, all.files = TRUE, recursive = TRUE, include.dirs = FALSE, no.. = TRUE)
+
+  # lê e limpa padrões
+  lines <- readLines(rsc_file, warn = FALSE)
+  lines <- sub("\\s*#.*$", "", lines)         # remove comentários
+  lines <- trimws(lines)
+  lines <- lines[nzchar(lines)]
+
+  allow <- grepl("^!", lines)
+  patt_allow <- sub("^!", "", lines[allow])
+  patt_deny  <- lines[!allow]
+
+  keep <- all
+  # aplica deny
+  if (length(patt_deny)) {
+    drop <- Reduce(`|`, lapply(patt_deny, function(p) grepl(p, keep)), init = FALSE)
+    keep <- keep[!drop]
+  }
+  # re-inclui allow
+  if (length(patt_allow)) {
+    add <- unlist(lapply(patt_allow, function(p) all[grepl(p, all)]), use.names = FALSE)
+    keep <- sort(unique(c(keep, add)))
+  }
+  # remove arquivos de controle comuns que rsconnect ignora de qualquer jeito
+  keep <- keep[!grepl("^\\.git/|^\\.Rproj\\.user/|\\.Rproj$", keep)]
+  keep
+}
+
+# use assim:
+setwd("C:/Users/josec/Documents/R/shinyremap")
+incluidos <- preview_bundle(".")
+length(incluidos)          # quantos arquivos irão
+incluidos[1:100]           # amostra
+# checagens rápidas
+any(grepl("\\.(csv|xlsx|xls)(\\.gz)?$", incluidos, ignore.case = TRUE))  # deve ser FALSE
+incluidos[grepl("^inst/app/data/_rda/.*\\.rda$", incluidos, ignore.case = TRUE)]  # deve listar seus .rda
+--------------------------------------------------------------------------------
+# Pacotes para rodar localmente e dependencias
+
+1)
+
+options(repos = c(CRAN = "https://cloud.r-project.org"), timeout = 600)
+
+# biblioteca local (evita permissão travando em C:/Users/...)
+dir.create("C:/Users/josec/.R/library", showWarnings = FALSE, recursive = TRUE)
+.libPaths(unique(c("C:/Users/josec/.R/library", .libPaths())))
+
+install.packages(c(
+  "pkgload","shiny","bs4Dash","readxl","readr","dplyr",
+  "janitor","stringr","glue","shinyalert","magrittr","rsconnect"
+))
+pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
+shiny::runApp("inst/app", launch.browser = TRUE)
+
+2) (devtools)
+options(repos = c(CRAN = "https://cloud.r-project.org"), timeout = 600)
+install.packages("devtools")
+--------------------------------------------------------------------------------
+
+# Build mais facil de rodar
+
+# Antes do check:
+Sys.setenv(R_REPOSITORIES = "NULL")  # ignora leitura de 'repositories' no processo filho
+devtools::check()
+
+
+# Simula um servidor limpo (detecta qualquer dependencia fantasma)
+
+withr::with_libpaths(new = tempdir(), {
+  remotes::install_deps(dependencies = TRUE)
+  pkgload::load_all()       # aqui falharia se insistisse em 'remap'
+  shiny::runApp()           # se for um app-level e não só pacote-go
+})
+
+--------------------------------------------------------------------------------
+link: https://cran.r-project.org/web/packages/rsconnect/refman/rsconnect.html#configureApp
+
+# Increase the instance size in the server (increase the memory)
+rsconnect::configureApp("remap", size="xxxlarge") # small, medium, large, xlarge, xxlarge, xxxlarge
+
+# metrics
+rsconnect::showMetrics(appName = "remap", account = "observatorioobstetrico", metricSeries = "docker_container_mem",c("total_rss"))

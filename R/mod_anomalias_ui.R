@@ -1,110 +1,74 @@
 # R/mod_anomalias_ui.R
-#' UI: Anomalias Congênitas
+#' UI: Anomalias Congênitas (SP)
 #' @noRd
 mod_anomalias_ui <- function(id) {
   ns <- shiny::NS(id)
   tagList(
-    # Título
     fluidRow(
-      column(
-        width = 12,
-        tags$div(class = "panel-title-custom", "Anomalias Congênitas")
-      )
+      column(12, tags$div(class = "panel-title-custom", "Anomalias Congênitas"))
     ),
-
-    # Filtros à esquerda / conteúdo à direita
     fluidRow(
-      # Coluna de filtros
       column(
         width = 4,
         bs4Dash::box(
-          title       = "Filtros",
-          status      = "primary",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "109vh",
+          title = "Filtros", status = "primary", solidHeader = TRUE,
+          width = NULL, height = "109vh",
           div(
             style = "overflow-y:auto; padding:10px; height:100%;",
-            tags$p(
-              style = "font-size:19px;font-style:italic;",
-              "Obs: os dados de 2024 são preliminares."
-            ),
+            tags$p(style = "font-size:16px;font-style:italic;",
+                   "Obs: os dados de 2024 são preliminares."),
             hr(),
-
-            # Nível de análise
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
               ns("nivel"), NULL,
-              choices = c("Nacional", "Estadual", "Municipal")
+              choices  = c("ESTADUAL","RRAS","DRS","REGIÃO DE SAÚDE","MUNICIPAL"),
+              selected = "ESTADUAL"
             ),
             uiOutput(ns("filtros_locais")),
             hr(),
-
-            # Intervalo de anos
             tags$h5(class = "section-header", "Selecione o intervalo de anos:"),
-            sliderInput(
-              ns("anos"), NULL,
-              min   = 2001,
-              max   = 2024,
-              value = c(2001, 2024),
-              sep   = "",
-              step  = 1
-            ),
+            sliderInput(ns("anos"), NULL, min = 2001, max = 2024,
+                        value = c(2001, 2024), sep = "", step = 1),
             hr(),
 
-            # Definição e fórmula
-            tags$p(
-              HTML(
-                "É importante ressaltar que essa variável do SINASC possui informações somente a partir do ano de 2001. Por esse motivo, não é possível fazer filtros em que são considerados anos anteriores."
-              )
-            ),
-            tags$p(
-              HTML(
-                "<strong>Definição:</strong> Considera-se anomalia congênita quando <code>def_anomalia = 'Sim'</code> na base SINASC.
-                Casos com <code>def_anomalia = 'Ignorado'</code> são considerados como dados faltantes."
-              )
-            ),
+            #---- Informações e opções adicionais ----
+            tags$h5(class = "section-header", "Informações adicionais:"),
+
+            tags$p(HTML(
+              "É importante ressaltar que essa variável do <code>SINASC</code> possui informações
+              somente a partir do ano de 2001. Por esse motivo, não é possível fazer
+              filtros em que são considerados anos anteriores."
+            )),
+            tags$p(HTML(
+              "Um caso é considerado como anomalia congênita se <code>def_anomalia = Sim</code>
+              na base de dados do <code>SINASC</code>. E um caso de anomalia congênita considerado
+              como dado faltante é se <code>def_anomalia = Ignorado</code>."
+            )),
             withMathJax(
-              tags$p(
-                HTML(
-                  "<strong>Fórmula:</strong><br/>
-                  $$\\%\\ \\mathrm{anomalias} \\;=\\;
-                  \\frac{\\mathrm{N^\\circ\\ anomalias\\ congênitas}}
-                        {(\\mathrm{N^\\circ\\ nascimentos} - \\mathrm{N^\\circ\\ sem\\ informação})}
-                  \\times 100$$"
-                )
-              )
+              tags$p(HTML(
+                "Algebricamente, a <code>porcentagem de anomalias</code> é dada por:<br/>
+                $$\\%\\,\\text{anomalias}=
+                \\frac{N^{\\text{o}}\\,\\text{anomalias congênitas}}
+                {(N^{\\text{o}}\\,\\text{nascimentos}-N^{\\text{o}}\\,\\text{sem informação})}
+                \\times 100.$$"
+              ))
             )
           )
         )
       ),
-
-      # Coluna de conteúdo: tabela + gráfico
       column(
         width = 8,
-        # Tabela (50% da altura)
         bs4Dash::box(
-          title       = "Tabela Anomalias Congênitas",
-          status      = "info",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "50vh",
-          div(
-            style = "height:100%; overflow-y:auto; position:relative;",
-            reactable::reactableOutput(ns("tabela_an"), height = "100%")
-          )
+          title = "Tabela Anomalias Congênitas", status = "info",
+          solidHeader = TRUE, width = NULL, height = "50vh",
+          div(style = "height:100%; overflow-y:auto; position:relative;",
+              reactable::reactableOutput(ns("tabela_an"), height = "100%"))
         ),
-        # Gráfico (50% da altura)
         bs4Dash::box(
-          title       = "Gráfico % Anomalias Congênitas",
-          status      = "info",
-          solidHeader = TRUE,
-          width       = NULL,
-          height      = "50vh",
-          div(
-            style = "height:100%; overflow-y:auto; position:relative;",
-            plotly::plotlyOutput(ns("grafico_an"), height = "100%")
-          )
+          title = "Gráfico % Anomalias Congênitas", status = "info",
+          solidHeader = TRUE, width = NULL, height = "50vh",
+          div(style = "height:100%; overflow-y:auto; position:relative;",
+              plotly::plotlyOutput(ns("grafico_an"), height = "100%"))
         )
       )
     )

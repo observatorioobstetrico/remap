@@ -1,9 +1,22 @@
 # R/global_data_indicadores.R
 # Cache em .rda + normalizações leves para performance e robustez
 
+#' Carrega e processa dados para os indicadores obstétricos
+#'
+#' Esta função lê diversos arquivos (planilhas e CSVs comprimidos) e
+#' normaliza colunas, converte tipos e agrega escolhas utilizadas nos
+#' filtros da aplicação. Foi ajustada para refletir corretamente os
+#' nomes de colunas da base de prematuridade/consultas pré‑natal,
+#' criando as variáveis `faltante_premat` e `premat` a partir dos
+#' campos disponíveis na base (`prematuro_faltante`, `prematuro_nenhuma`,
+#' `prematuro_1_6` e `prematuro_7_mais`).
+#'
+#' @param path_data Caminho para a pasta `inst/app/data` do pacote.
+#' @param rebuild Se `TRUE`, força a leitura dos arquivos em disco e
+#'   recria os caches `.rda`.
+#' @return Uma lista com data frames prontos para uso nos módulos do
+#'   painel, além das listas de escolhas para filtros.
 #' @import dplyr readr readxl janitor stringr
-NULL
-
 load_indicadores_data <- function(path_data = app_sys("app", "data"), rebuild = FALSE) {
 
   # Dependências reais (arquivos-fonte)
@@ -35,7 +48,6 @@ load_indicadores_data <- function(path_data = app_sys("app", "data"), rebuild = 
       df <- janitor::clean_names(df)
       if ("codigo" %in% names(df)) {
         df <- dplyr::mutate(df, codigo = suppressWarnings(as.numeric(codigo)))
-        # expansão: mantém todos os municípios SP e injeta as colunas do df
         dplyr::left_join(ref_sp, df, by = c("cod_ibge" = "codigo"))
       } else if ("municipio" %in% names(df)) {
         df <- dplyr::mutate(df, municipio = trimws(municipio))
@@ -76,23 +88,30 @@ load_indicadores_data <- function(path_data = app_sys("app", "data"), rebuild = 
 
     sinasc_sp <- join_rras_sp(sinasc) %>%
       dplyr::mutate(
-        ano = norm_ano(ano),
-        nascidos = suppressWarnings(as.numeric(nascidos)),
+        ano          = norm_ano(ano),
+        nascidos     = suppressWarnings(as.numeric(nascidos)),
         total_nascidos = dplyr::coalesce(suppressWarnings(as.numeric(total_nascidos)), nascidos)
       )
 
+    # Ajuste de tipos e cálculo para prematuridade e consultas pré‑natal
     premat_cons_sp <- join_rras_sp(premat_cons) %>%
       dplyr::mutate(
         ano               = norm_ano(ano),
         nascidos          = suppressWarnings(as.numeric(nascidos)),
-        faltante_premat   = suppressWarnings(as.numeric(faltante_premat)),
-        premat            = suppressWarnings(as.numeric(premat)),
+        # Ajustamos os nomes das colunas para refletir a base real:
+        # prematuro_faltante: número de prematuros com informação faltante
+        faltante_premat   = suppressWarnings(as.numeric(prematuro_faltante)),
+        # premat: total de prematuros, somando todas as categorias disponíveis
+        premat            = suppressWarnings(as.numeric(prematuro_nenhuma)) +
+          suppressWarnings(as.numeric(prematuro_1_6))   +
+          suppressWarnings(as.numeric(prematuro_7_mais)),
         faltante_consulta = suppressWarnings(as.numeric(faltante_consulta)),
         nenhuma_consulta  = suppressWarnings(as.numeric(nenhuma_consulta)),
         consulta1         = suppressWarnings(as.numeric(consulta1)),
         consulta4         = suppressWarnings(as.numeric(consulta4))
       )
 
+    # Função auxiliar para adicionar grupo_robson_aux (mantida do original)
     add_grupo_aux <- function(df) {
       if ("grupo_robson_aux" %in% names(df)) return(df)
       if ("grupo_robson" %in% names(df)) {

@@ -2,11 +2,18 @@
 
 #' The application User-Interface
 #'
+#' Este arquivo constrói toda a interface do painel, agregando os
+#' recursos externos (CSS, JS e favicon), a estrutura da página
+#' principal e os itens de menu. Nesta versão foram incluídos novos
+#' elementos no menu lateral e no corpo da aplicação para suportar a
+#' tela de "Estabelecimentos de Referência", que permite aos
+#' usuários visualizar tabelas de estabelecimentos de referência
+#' conforme filtros selecionados.
+#'
 #' @param request Internal parameter for {shiny}. DO NOT REMOVE.
 #' @import shiny
 #' @import bs4Dash
 #' @import golem
-#' @importFrom golem add_resource_path bundle_resources favicon
 #' @importFrom magrittr %>%
 #' @noRd
 #' @export
@@ -17,7 +24,7 @@ app_ui <- function(request) {
 
     # 2. Página bs4Dash
     bs4Dash::bs4DashPage(
-      title = "Projeto ReMaP - São Paulo",
+      title = "Painel ReMaP",
 
       # --- Cabeçalho (TOP NAVBAR) ---
       header = bs4Dash::bs4DashNavbar(
@@ -52,9 +59,15 @@ app_ui <- function(request) {
           bs4Dash::bs4SidebarMenuItem(
             "Estatísticas RRAS",
             icon = icon("chart-bar"),
+
             bs4Dash::bs4SidebarMenuSubItem(
               "Atenção Primária à Saúde",
               tabName = "tabela_1_APS"
+            ),
+
+            bs4Dash::bs4SidebarMenuSubItem(
+              "Estabelecimentos de Referência",
+              tabName = "estabelecimentos"
             )
           ),
 
@@ -85,8 +98,6 @@ app_ui <- function(request) {
 
       # --- Corpo (Body) com abas ---
       body = bs4Dash::bs4DashBody(
-        # Âncora opcional (não é mais necessária para a seta)
-        # tags$div(id = "sidebar-arrow-anchor"),
         bs4Dash::bs4TabItems(
           # Aba Home
           bs4Dash::bs4TabItem(
@@ -124,14 +135,22 @@ app_ui <- function(request) {
           bs4Dash::bs4TabItem(tabName = "anomalias",              mod_anomalias_ui("an")),
           bs4Dash::bs4TabItem(tabName = "prenatal",               mod_prenatal_ui("cpn")),
           bs4Dash::bs4TabItem(tabName = "robson",                 mod_robson_ui("robson")),
-          bs4Dash::bs4TabItem(tabName = "robson_cesarea",         mod_robson_cesareas_ui("rc"))
+          bs4Dash::bs4TabItem(tabName = "robson_cesarea",         mod_robson_cesareas_ui("rc")),
+
+          # NOVA ABA: Estabelecimentos de Referência
+          bs4Dash::bs4TabItem(tabName = "estabelecimentos", mod_estabelecimentos_ui("estabelecimentos"))
         )
       )
     )
   )
 }
 
-#' Add external Resources to the Application
+#' Adiciona recursos externos à aplicação
+#'
+#' Esta função configura os caminhos para os recursos estáticos
+#' (imagens, CSS e JavaScript) e inclui o favicon e folhas de estilo
+#' personalizadas. Não é necessário alterar esta função ao adicionar
+#' novas telas, desde que os arquivos permaneçam na pasta `inst/app/www`.
 #'
 #' @import shiny
 #' @importFrom golem add_resource_path bundle_resources favicon
@@ -140,7 +159,7 @@ golem_add_external_resources <- function() {
   add_resource_path("www", app_sys("app", "www"))
   tags$head(
     favicon(ext = "png"),
-    bundle_resources(path = app_sys("app", "www"), app_title = "shinyremap"),
+    bundle_resources(path = app_sys("app", "www"), app_title = "Painel ReMaP"),
     includeCSS(app_sys("app", "www", "styles.css")),
     includeScript(app_sys("app", "www", "scripts.js"))
   )

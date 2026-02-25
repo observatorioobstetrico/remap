@@ -11,7 +11,7 @@ rsconnect::showLogs(appName = "shinyremap", streaming = TRUE) validar deploy
 # Rodar caso houver alterações nos dados
 
 source("dev/build_cache_once_rda.R")
-
+rm(list = c("load_referencias_data"))
 
 --------------------------------------------------------------------------------
 # Verificar o bundle que será enviado para deploy
@@ -77,28 +77,3 @@ shiny::runApp("inst/app", launch.browser = TRUE)
 2) (devtools)
 options(repos = c(CRAN = "https://cloud.r-project.org"), timeout = 600)
 install.packages("devtools")
---------------------------------------------------------------------------------
-
-# Build mais facil de rodar
-
-# Antes do check:
-Sys.setenv(R_REPOSITORIES = "NULL")  # ignora leitura de 'repositories' no processo filho
-devtools::check()
-
-
-# Simula um servidor limpo (detecta qualquer dependencia fantasma)
-
-withr::with_libpaths(new = tempdir(), {
-  remotes::install_deps(dependencies = TRUE)
-  pkgload::load_all()       # aqui falharia se insistisse em 'remap'
-  shiny::runApp()           # se for um app-level e não só pacote-go
-})
-
---------------------------------------------------------------------------------
-link: https://cran.r-project.org/web/packages/rsconnect/refman/rsconnect.html#configureApp
-
-# Increase the instance size in the server (increase the memory)
-rsconnect::configureApp("remap", size="xxxlarge") # small, medium, large, xlarge, xxlarge, xxxlarge
-
-# metrics
-rsconnect::showMetrics(appName = "remap", account = "observatorioobstetrico", metricSeries = "docker_container_mem",c("total_rss"))

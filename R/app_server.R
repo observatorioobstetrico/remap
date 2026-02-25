@@ -2,6 +2,14 @@
 
 #' The application server-side
 #'
+#' Este arquivo instancia todos os módulos do painel. Ele carrega os
+#' dados necessários para cada tela por meio das funções `load_*` e
+#' passa as listas resultantes aos módulos correspondentes. Nesta
+#' versão, adicionamos a leitura dos dados de estabelecimentos de
+#' referência (`load_referencias_data`) e inicializamos o módulo
+#' `mod_estabelecimentos_server` responsável por exibir e filtrar as
+#' tabelas desta nova tela.
+#'
 #' @param input,output,session Internal parameters for {shiny}. DO NOT REMOVE.
 #' @import shiny
 #' @noRd
@@ -9,10 +17,11 @@
 app_server <- function(input, output, session) {
 
   # 1. Carrega dados todas as vezes (global)
-  data_list_aps    <- load_data()              # Dados RRAS APS
-  data_list_obitos <- load_obitos_data()       # Dados de óbitos gestantes/puérperas
-  data_list_series <- load_series_data()       # Dados de séries de óbitos (.rda)
-  data_list_ind    <- load_indicadores_data()  # Dados indicadores obstétricos
+  data_list_aps      <- load_data()              # Dados RRAS APS
+  data_list_obitos   <- load_obitos_data()       # Dados de óbitos gestantes/puérperas
+  data_list_series   <- load_series_data()       # Dados de séries de óbitos (.rda)
+  data_list_ind      <- load_indicadores_data()  # Dados indicadores obstétricos
+  data_list_ref      <- load_referencias_data()  # Dados de estabelecimentos de referência
 
   # 2. Inicia módulos principais
 
@@ -38,4 +47,7 @@ app_server <- function(input, output, session) {
   mod_prenatal_server("cpn", data_list = data_list_ind)
   mod_robson_server("robson", data_list = data_list_ind)
   mod_robson_cesareas_server("rc", data_list = data_list_ind)
+
+  # Estabelecimentos de Referência
+  mod_estabelecimentos_server("estabelecimentos", data_list = data_list_ref)
 }

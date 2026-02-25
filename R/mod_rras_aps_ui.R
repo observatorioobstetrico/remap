@@ -120,33 +120,35 @@ mod_rras_aps_ui <- function(id) {
         fluidRow(
           column(width = 6, offset = 3, uiOutput(ns("card_plot_cobertura_ab")))
         )
-      ),
-      br(), br(),
-      # Tabelas
-      fluidRow(
-        width = 12,
-        column(
-          width = 6,
-          bs4Dash::bs4Card(
-            title  = "Estabelecimentos de referência para AAE (AGAR)",
-            height = "100%",
-            width = NULL,
-            collapsible = FALSE,   # Desativa o recurso de minimizar
-            DT::DTOutput(ns("table_aae"))
-          )
-        ),
-        br(),
-        column(
-          width = 6,
-          bs4Dash::bs4Card(
-            title  = "Estabelecimentos de referência para Parto (Baixo Risco)",
-            height = "100%",
-            width = NULL,
-            collapsible = FALSE,   # Desativa o recurso de minimizar
-            DT::DTOutput(ns("table_bxr"))
-          )
-        )
       )
+      ## Tabelas de estabelecimentos antigas
+      # ,
+      # br(), br(),
+      # # Tabelas
+      # fluidRow(
+      #   width = 12,
+      #   column(
+      #     width = 6,
+      #     bs4Dash::bs4Card(
+      #       title  = "Estabelecimentos de referência para AAE (AGAR)",
+      #       height = "100%",
+      #       width = NULL,
+      #       collapsible = FALSE,   # Desativa o recurso de minimizar
+      #       DT::DTOutput(ns("table_aae"))
+      #     )
+      #   ),
+      #   br(),
+      #   column(
+      #     width = 6,
+      #     bs4Dash::bs4Card(
+      #       title  = "Estabelecimentos de referência para Parto (Baixo Risco)",
+      #       height = "100%",
+      #       width = NULL,
+      #       collapsible = FALSE,   # Desativa o recurso de minimizar
+      #       DT::DTOutput(ns("table_bxr"))
+      #     )
+      #   )
+      # )
     )
   )
 }

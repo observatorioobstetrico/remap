@@ -513,232 +513,233 @@ mod_rras_aps_server <- function(id, data_list) {
       df
     })
 
-    # Dados para tabelas de AAE
-    filtered_data_aae <- reactive({
-      req(input$nivel_selection)
-      level <- input$nivel_selection
-
-      if (level == "RRAS") {
-        req(isTruthy(input$secondary_filter))
-        switch(
-          input$secondary_filter,
-          "RRAS 1"  = data_list$tabela_1_APS_AAE,
-          "RRAS 2"  = data_list$tabela_2_APS_AAE,
-          "RRAS 3"  = data_list$tabela_3_APS_AAE,
-          "RRAS 4"  = data_list$tabela_4_APS_AAE,
-          "RRAS 5"  = data_list$tabela_5_APS_AAE,
-          "RRAS 6"  = data_list$tabela_6_APS_AAE,
-          "RRAS 7"  = data_list$tabela_7_APS_AAE,
-          "RRAS 8"  = data_list$tabela_8_APS_AAE,
-          "RRAS 9"  = data_list$tabela_9_APS_AAE,
-          "RRAS 10" = data_list$tabela_10_APS_AAE,
-          "RRAS 11" = data_list$tabela_11_APS_AAE,
-          "RRAS 12" = data_list$tabela_12_APS_AAE,
-          "RRAS 13" = data_list$tabela_13_APS_AAE,
-          "RRAS 14" = data_list$tabela_14_APS_AAE,
-          "RRAS 15" = data_list$tabela_15_APS_AAE,
-          "RRAS 16" = data_list$tabela_16_APS_AAE,
-          "RRAS 17" = data_list$tabela_17_APS_AAE,
-          "RRAS 18" = data_list$tabela_18_APS_AAE
-        )
-      } else {
-        table_aae_all <- dplyr::bind_rows(
-          data_list$tabela_1_APS_AAE,  data_list$tabela_2_APS_AAE,
-          data_list$tabela_3_APS_AAE,  data_list$tabela_4_APS_AAE,
-          data_list$tabela_5_APS_AAE,  data_list$tabela_6_APS_AAE,
-          data_list$tabela_7_APS_AAE,  data_list$tabela_8_APS_AAE,
-          data_list$tabela_9_APS_AAE,  data_list$tabela_10_APS_AAE,
-          data_list$tabela_11_APS_AAE, data_list$tabela_12_APS_AAE,
-          data_list$tabela_13_APS_AAE, data_list$tabela_14_APS_AAE,
-          data_list$tabela_15_APS_AAE, data_list$tabela_16_APS_AAE,
-          data_list$tabela_17_APS_AAE, data_list$tabela_18_APS_AAE
-        )
-
-        if (level == "ESTADUAL") {
-          return(table_aae_all)
-        }
-
-        req(isTruthy(input$secondary_filter))
-
-        if (level == "DRS") {
-          if (!is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
-            # Preferência: filtrar pela própria coluna se ela existir;
-            # fallback: mapear municípios da coordenadoria via tabela_APS
-            if ("COORDENADORIA DE SAÚDE" %in% names(table_aae_all)) {
-              dados <- table_aae_all[table_aae_all$`COORDENADORIA DE SAÚDE` == input$secondary_filter, ]
-            } else {
-              munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`COORDENADORIA DE SAÚDE` == input$secondary_filter])
-              dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` %in% munis, ]
-            }
-          } else {
-            dados <- table_aae_all[table_aae_all$DRS == input$secondary_filter, ]
-          }
-          dados <- dados |>
-            dplyr::rename(`MUNICÍPIO DA DRS` = `MUNICÍPIO DA RRAS`) |>
-            dplyr::filter(!if_all(dplyr::everything(), is.na))
-          return(dados)
-        }
-
-        if (level == "REGIÃO DE SAÚDE") {
-          dados <- table_aae_all[table_aae_all$`REGIÃO DE SAÚDE` == input$secondary_filter, ] |>
-            dplyr::rename(`MUNICÍPIO DA REGIÃO DE SAÚDE` = `MUNICÍPIO DA RRAS`)
-          return(dados)
-        }
-
-        if (level == "MUNICIPAL") {
-          if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
-            # secondary_filter é uma SUPERVISÃO; mapeia p/ municípios e filtra
-            munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`SUPERVISÃO DE SAÚDE` == input$secondary_filter])
-            dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` %in% munis, ]
-          } else {
-            dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` == input$secondary_filter, ]
-          }
-          return(dados)
-        }
-      }
-    })
-
-
-    # Dados para tabelas de BAIXO RISCO
-    filtered_data_bxr <- reactive({
-      req(input$nivel_selection)
-      level <- input$nivel_selection
-
-      if (level == "RRAS") {
-        req(isTruthy(input$secondary_filter))
-        switch(
-          input$secondary_filter,
-          "RRAS 1"  = data_list$tabela_1_APS_BXRISCO,
-          "RRAS 2"  = data_list$tabela_2_APS_BXRISCO,
-          "RRAS 3"  = data_list$tabela_3_APS_BXRISCO,
-          "RRAS 4"  = data_list$tabela_4_APS_BXRISCO,
-          "RRAS 5"  = data_list$tabela_5_APS_BXRISCO,
-          "RRAS 6"  = data_list$tabela_6_APS_BXRISCO,
-          "RRAS 7"  = data_list$tabela_7_APS_BXRISCO,
-          "RRAS 8"  = data_list$tabela_8_APS_BXRISCO,
-          "RRAS 9"  = data_list$tabela_9_APS_BXRISCO,
-          "RRAS 10" = data_list$tabela_10_APS_BXRISCO,
-          "RRAS 11" = data_list$tabela_11_APS_BXRISCO,
-          "RRAS 12" = data_list$tabela_12_APS_BXRISCO,
-          "RRAS 13" = data_list$tabela_13_APS_BXRISCO,
-          "RRAS 14" = data_list$tabela_14_APS_BXRISCO,
-          "RRAS 15" = data_list$tabela_15_APS_BXRISCO,
-          "RRAS 16" = data_list$tabela_16_APS_BXRISCO,
-          "RRAS 17" = data_list$tabela_17_APS_BXRISCO,
-          "RRAS 18" = data_list$tabela_18_APS_BXRISCO
-        )
-      } else {
-        table_bxr_all <- dplyr::bind_rows(
-          data_list$tabela_1_APS_BXRISCO,  data_list$tabela_2_APS_BXRISCO,
-          data_list$tabela_3_APS_BXRISCO,  data_list$tabela_4_APS_BXRISCO,
-          data_list$tabela_5_APS_BXRISCO,  data_list$tabela_6_APS_BXRISCO,
-          data_list$tabela_7_APS_BXRISCO,  data_list$tabela_8_APS_BXRISCO,
-          data_list$tabela_9_APS_BXRISCO,  data_list$tabela_10_APS_BXRISCO,
-          data_list$tabela_11_APS_BXRISCO, data_list$tabela_12_APS_BXRISCO,
-          data_list$tabela_13_APS_BXRISCO, data_list$tabela_14_APS_BXRISCO,
-          data_list$tabela_15_APS_BXRISCO, data_list$tabela_16_APS_BXRISCO,
-          data_list$tabela_17_APS_BXRISCO, data_list$tabela_18_APS_BXRISCO
-        )
-
-        if (level == "ESTADUAL") {
-          return(table_bxr_all)
-        }
-
-        req(isTruthy(input$secondary_filter))
-
-        if (level == "DRS") {
-          if (!is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
-            if ("COORDENADORIA DE SAÚDE" %in% names(table_bxr_all)) {
-              dados <- table_bxr_all[table_bxr_all$`COORDENADORIA DE SAÚDE` == input$secondary_filter, ]
-            } else {
-              munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`COORDENADORIA DE SAÚDE` == input$secondary_filter])
-              dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` %in% munis, ]
-            }
-          } else {
-            dados <- table_bxr_all[table_bxr_all$DRS == input$secondary_filter, ]
-          }
-          dados <- dados |>
-            dplyr::rename(`MUNICÍPIO DA DRS` = `MUNICÍPIO DA RRAS`) |>
-            dplyr::filter(!if_all(dplyr::everything(), is.na))
-          return(dados)
-        }
-
-        if (level == "REGIÃO DE SAÚDE") {
-          dados <- table_bxr_all[table_bxr_all$`REGIÃO DE SAÚDE` == input$secondary_filter, ] |>
-            dplyr::rename(`MUNICÍPIO DA REGIÃO DE SAÚDE` = `MUNICÍPIO DA RRAS`)
-          return(dados)
-        }
-
-        if (level == "MUNICIPAL") {
-          if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
-            munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`SUPERVISÃO DE SAÚDE` == input$secondary_filter])
-            dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` %in% munis, ]
-          } else {
-            dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` == input$secondary_filter, ]
-          }
-          return(dados)
-        }
-      }
-    })
-
-    # Renderiza as tabelas
-    output$table_aae <- DT::renderDT({
-      data <- filtered_data_aae()
-      validate(
-        need(!is.null(data) && ncol(data) > 0, "Dados não disponíveis para exibição")
-      )
-      DT::datatable(
-        data,
-        options = list(
-          pageLength = -1,
-          autoWidth  = TRUE,
-          scrollX    = TRUE,
-          scrollY    = "400px",
-          scrollCollapse = TRUE,
-          paging     = FALSE,
-          dom        = 't',
-          columnDefs = list(
-            list(className = "dt-center", targets = "_all"),
-            list(width = '10%', targets = "_all")
-          )
-        ),
-        rownames = FALSE,
-        class = "compact stripe hover nowrap"
-      ) |> DT::formatStyle(
-        columns = names(filtered_data_aae()),
-        `padding-left` = '0px',
-        `padding-right` = '0px'
-      )
-    })
-
-    output$table_bxr <- DT::renderDT({
-      data <- filtered_data_bxr()
-      validate(
-        need(!is.null(data) && ncol(data) > 0, "Dados não disponíveis para exibição")
-      )
-      DT::datatable(
-        data,
-        options = list(
-          pageLength = -1,
-          autoWidth  = TRUE,
-          scrollX    = TRUE,
-          scrollY    = "400px",
-          scrollCollapse = TRUE,
-          paging     = FALSE,
-          dom        = 't',
-          columnDefs = list(
-            list(className = "dt-center", targets = "_all"),
-            list(width = '10%', targets = "_all")
-          )
-        ),
-        rownames = FALSE,
-        class = "compact stripe hover nowrap"
-      ) |> DT::formatStyle(
-        columns = names(filtered_data_bxr()),
-        `padding-left` = '0px',
-        `padding-right` = '0px'
-      )
-    })
+    ## Tabelas de estabelecimentos antigas
+    # # Dados para tabelas de AAE
+    # filtered_data_aae <- reactive({
+    #   req(input$nivel_selection)
+    #   level <- input$nivel_selection
+    #
+    #   if (level == "RRAS") {
+    #     req(isTruthy(input$secondary_filter))
+    #     switch(
+    #       input$secondary_filter,
+    #       "RRAS 1"  = data_list$tabela_1_APS_AAE,
+    #       "RRAS 2"  = data_list$tabela_2_APS_AAE,
+    #       "RRAS 3"  = data_list$tabela_3_APS_AAE,
+    #       "RRAS 4"  = data_list$tabela_4_APS_AAE,
+    #       "RRAS 5"  = data_list$tabela_5_APS_AAE,
+    #       "RRAS 6"  = data_list$tabela_6_APS_AAE,
+    #       "RRAS 7"  = data_list$tabela_7_APS_AAE,
+    #       "RRAS 8"  = data_list$tabela_8_APS_AAE,
+    #       "RRAS 9"  = data_list$tabela_9_APS_AAE,
+    #       "RRAS 10" = data_list$tabela_10_APS_AAE,
+    #       "RRAS 11" = data_list$tabela_11_APS_AAE,
+    #       "RRAS 12" = data_list$tabela_12_APS_AAE,
+    #       "RRAS 13" = data_list$tabela_13_APS_AAE,
+    #       "RRAS 14" = data_list$tabela_14_APS_AAE,
+    #       "RRAS 15" = data_list$tabela_15_APS_AAE,
+    #       "RRAS 16" = data_list$tabela_16_APS_AAE,
+    #       "RRAS 17" = data_list$tabela_17_APS_AAE,
+    #       "RRAS 18" = data_list$tabela_18_APS_AAE
+    #     )
+    #   } else {
+    #     table_aae_all <- dplyr::bind_rows(
+    #       data_list$tabela_1_APS_AAE,  data_list$tabela_2_APS_AAE,
+    #       data_list$tabela_3_APS_AAE,  data_list$tabela_4_APS_AAE,
+    #       data_list$tabela_5_APS_AAE,  data_list$tabela_6_APS_AAE,
+    #       data_list$tabela_7_APS_AAE,  data_list$tabela_8_APS_AAE,
+    #       data_list$tabela_9_APS_AAE,  data_list$tabela_10_APS_AAE,
+    #       data_list$tabela_11_APS_AAE, data_list$tabela_12_APS_AAE,
+    #       data_list$tabela_13_APS_AAE, data_list$tabela_14_APS_AAE,
+    #       data_list$tabela_15_APS_AAE, data_list$tabela_16_APS_AAE,
+    #       data_list$tabela_17_APS_AAE, data_list$tabela_18_APS_AAE
+    #     )
+    #
+    #     if (level == "ESTADUAL") {
+    #       return(table_aae_all)
+    #     }
+    #
+    #     req(isTruthy(input$secondary_filter))
+    #
+    #     if (level == "DRS") {
+    #       if (!is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
+    #         # Preferência: filtrar pela própria coluna se ela existir;
+    #         # fallback: mapear municípios da coordenadoria via tabela_APS
+    #         if ("COORDENADORIA DE SAÚDE" %in% names(table_aae_all)) {
+    #           dados <- table_aae_all[table_aae_all$`COORDENADORIA DE SAÚDE` == input$secondary_filter, ]
+    #         } else {
+    #           munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`COORDENADORIA DE SAÚDE` == input$secondary_filter])
+    #           dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` %in% munis, ]
+    #         }
+    #       } else {
+    #         dados <- table_aae_all[table_aae_all$DRS == input$secondary_filter, ]
+    #       }
+    #       dados <- dados |>
+    #         dplyr::rename(`MUNICÍPIO DA DRS` = `MUNICÍPIO DA RRAS`) |>
+    #         dplyr::filter(!if_all(dplyr::everything(), is.na))
+    #       return(dados)
+    #     }
+    #
+    #     if (level == "REGIÃO DE SAÚDE") {
+    #       dados <- table_aae_all[table_aae_all$`REGIÃO DE SAÚDE` == input$secondary_filter, ] |>
+    #         dplyr::rename(`MUNICÍPIO DA REGIÃO DE SAÚDE` = `MUNICÍPIO DA RRAS`)
+    #       return(dados)
+    #     }
+    #
+    #     if (level == "MUNICIPAL") {
+    #       if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
+    #         # secondary_filter é uma SUPERVISÃO; mapeia p/ municípios e filtra
+    #         munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`SUPERVISÃO DE SAÚDE` == input$secondary_filter])
+    #         dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` %in% munis, ]
+    #       } else {
+    #         dados <- table_aae_all[table_aae_all$`MUNICÍPIO DA RRAS` == input$secondary_filter, ]
+    #       }
+    #       return(dados)
+    #     }
+    #   }
+    # })
+    #
+    #
+    # # Dados para tabelas de BAIXO RISCO
+    # filtered_data_bxr <- reactive({
+    #   req(input$nivel_selection)
+    #   level <- input$nivel_selection
+    #
+    #   if (level == "RRAS") {
+    #     req(isTruthy(input$secondary_filter))
+    #     switch(
+    #       input$secondary_filter,
+    #       "RRAS 1"  = data_list$tabela_1_APS_BXRISCO,
+    #       "RRAS 2"  = data_list$tabela_2_APS_BXRISCO,
+    #       "RRAS 3"  = data_list$tabela_3_APS_BXRISCO,
+    #       "RRAS 4"  = data_list$tabela_4_APS_BXRISCO,
+    #       "RRAS 5"  = data_list$tabela_5_APS_BXRISCO,
+    #       "RRAS 6"  = data_list$tabela_6_APS_BXRISCO,
+    #       "RRAS 7"  = data_list$tabela_7_APS_BXRISCO,
+    #       "RRAS 8"  = data_list$tabela_8_APS_BXRISCO,
+    #       "RRAS 9"  = data_list$tabela_9_APS_BXRISCO,
+    #       "RRAS 10" = data_list$tabela_10_APS_BXRISCO,
+    #       "RRAS 11" = data_list$tabela_11_APS_BXRISCO,
+    #       "RRAS 12" = data_list$tabela_12_APS_BXRISCO,
+    #       "RRAS 13" = data_list$tabela_13_APS_BXRISCO,
+    #       "RRAS 14" = data_list$tabela_14_APS_BXRISCO,
+    #       "RRAS 15" = data_list$tabela_15_APS_BXRISCO,
+    #       "RRAS 16" = data_list$tabela_16_APS_BXRISCO,
+    #       "RRAS 17" = data_list$tabela_17_APS_BXRISCO,
+    #       "RRAS 18" = data_list$tabela_18_APS_BXRISCO
+    #     )
+    #   } else {
+    #     table_bxr_all <- dplyr::bind_rows(
+    #       data_list$tabela_1_APS_BXRISCO,  data_list$tabela_2_APS_BXRISCO,
+    #       data_list$tabela_3_APS_BXRISCO,  data_list$tabela_4_APS_BXRISCO,
+    #       data_list$tabela_5_APS_BXRISCO,  data_list$tabela_6_APS_BXRISCO,
+    #       data_list$tabela_7_APS_BXRISCO,  data_list$tabela_8_APS_BXRISCO,
+    #       data_list$tabela_9_APS_BXRISCO,  data_list$tabela_10_APS_BXRISCO,
+    #       data_list$tabela_11_APS_BXRISCO, data_list$tabela_12_APS_BXRISCO,
+    #       data_list$tabela_13_APS_BXRISCO, data_list$tabela_14_APS_BXRISCO,
+    #       data_list$tabela_15_APS_BXRISCO, data_list$tabela_16_APS_BXRISCO,
+    #       data_list$tabela_17_APS_BXRISCO, data_list$tabela_18_APS_BXRISCO
+    #     )
+    #
+    #     if (level == "ESTADUAL") {
+    #       return(table_bxr_all)
+    #     }
+    #
+    #     req(isTruthy(input$secondary_filter))
+    #
+    #     if (level == "DRS") {
+    #       if (!is.null(input$analisar_sp) && input$analisar_sp == "SIM") {
+    #         if ("COORDENADORIA DE SAÚDE" %in% names(table_bxr_all)) {
+    #           dados <- table_bxr_all[table_bxr_all$`COORDENADORIA DE SAÚDE` == input$secondary_filter, ]
+    #         } else {
+    #           munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`COORDENADORIA DE SAÚDE` == input$secondary_filter])
+    #           dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` %in% munis, ]
+    #         }
+    #       } else {
+    #         dados <- table_bxr_all[table_bxr_all$DRS == input$secondary_filter, ]
+    #       }
+    #       dados <- dados |>
+    #         dplyr::rename(`MUNICÍPIO DA DRS` = `MUNICÍPIO DA RRAS`) |>
+    #         dplyr::filter(!if_all(dplyr::everything(), is.na))
+    #       return(dados)
+    #     }
+    #
+    #     if (level == "REGIÃO DE SAÚDE") {
+    #       dados <- table_bxr_all[table_bxr_all$`REGIÃO DE SAÚDE` == input$secondary_filter, ] |>
+    #         dplyr::rename(`MUNICÍPIO DA REGIÃO DE SAÚDE` = `MUNICÍPIO DA RRAS`)
+    #       return(dados)
+    #     }
+    #
+    #     if (level == "MUNICIPAL") {
+    #       if (!is.null(input$analisar_muni_sp) && input$analisar_muni_sp == "SIM") {
+    #         munis <- unique(tabela_APS$MUNICIPAL[tabela_APS$`SUPERVISÃO DE SAÚDE` == input$secondary_filter])
+    #         dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` %in% munis, ]
+    #       } else {
+    #         dados <- table_bxr_all[table_bxr_all$`MUNICÍPIO DA RRAS` == input$secondary_filter, ]
+    #       }
+    #       return(dados)
+    #     }
+    #   }
+    # })
+    #
+    # # Renderiza as tabelas
+    # output$table_aae <- DT::renderDT({
+    #   data <- filtered_data_aae()
+    #   validate(
+    #     need(!is.null(data) && ncol(data) > 0, "Dados não disponíveis para exibição")
+    #   )
+    #   DT::datatable(
+    #     data,
+    #     options = list(
+    #       pageLength = -1,
+    #       autoWidth  = TRUE,
+    #       scrollX    = TRUE,
+    #       scrollY    = "400px",
+    #       scrollCollapse = TRUE,
+    #       paging     = FALSE,
+    #       dom        = 't',
+    #       columnDefs = list(
+    #         list(className = "dt-center", targets = "_all"),
+    #         list(width = '10%', targets = "_all")
+    #       )
+    #     ),
+    #     rownames = FALSE,
+    #     class = "compact stripe hover nowrap"
+    #   ) |> DT::formatStyle(
+    #     columns = names(filtered_data_aae()),
+    #     `padding-left` = '0px',
+    #     `padding-right` = '0px'
+    #   )
+    # })
+    #
+    # output$table_bxr <- DT::renderDT({
+    #   data <- filtered_data_bxr()
+    #   validate(
+    #     need(!is.null(data) && ncol(data) > 0, "Dados não disponíveis para exibição")
+    #   )
+    #   DT::datatable(
+    #     data,
+    #     options = list(
+    #       pageLength = -1,
+    #       autoWidth  = TRUE,
+    #       scrollX    = TRUE,
+    #       scrollY    = "400px",
+    #       scrollCollapse = TRUE,
+    #       paging     = FALSE,
+    #       dom        = 't',
+    #       columnDefs = list(
+    #         list(className = "dt-center", targets = "_all"),
+    #         list(width = '10%', targets = "_all")
+    #       )
+    #     ),
+    #     rownames = FALSE,
+    #     class = "compact stripe hover nowrap"
+    #   ) |> DT::formatStyle(
+    #     columns = names(filtered_data_bxr()),
+    #     `padding-left` = '0px',
+    #     `padding-right` = '0px'
+    #   )
+    # })
 
     # Caixas resumo principais
     output$summary_box_1 <- renderUI({

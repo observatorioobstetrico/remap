@@ -884,4 +884,172 @@
   scroll-margin-top: calc(var(--navbar-height) + 12px);
 }
 
+/* =========================================================
+   Estabelecimentos (modo abas): tabBox até o bottom da tela
+   ========================================================= */
 
+/* 1) Ajuste fino: quanto existe acima do tabBox (título + filtros + margens).
+   Comece com 260px e ajuste se necessário (ex.: 230–320). */
+:root {
+  --estab-tabs-top-offset: 260px;
+}
+
+/* 2) O card/tabBox ocupa a altura útil da viewport */
+.estab-tabbox-fill .card {
+  height: calc(100vh - var(--navbar-height) - var(--estab-tabs-top-offset)) !important;
+  max-height: calc(100vh - var(--navbar-height) - var(--estab-tabs-top-offset)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 3) O conteúdo das abas (tab-content) preenche o restante do card */
+.estab-tabbox-fill .card-body,
+.estab-tabbox-fill .tab-content,
+.estab-tabbox-fill .tab-pane {
+  height: 100% !important;
+}
+
+/* 4) A reactable (htmlwidget) preenche a altura disponível */
+.estab-tabbox-fill .reactable.html-widget {
+  height: 100% !important;
+}
+
+/* 5) Faz o "tbody" ser a área que rola (scroll interno da tabela) */
+.estab-tabbox-fill .reactable .rt-table {
+  height: 100% !important;
+}
+
+.estab-tabbox-fill .reactable .rt-tbody {
+  overflow-y: auto !important;
+}
+
+/* 6) Evita que o padding do card desperdice espaço vertical */
+.estab-tabbox-fill .card-body {
+  padding-bottom: 8px !important;
+}
+
+/* =========================================================
+   Estabelecimentos (modo abas): estilo igual ao bloco de Gráficos Pré-natal
+   (cores da .custom-radio: #264061 e #1f2b4d)
+   ========================================================= */
+
+:root{
+  --pn-tab-bg: #264061;         /* cor padrão (igual custom-radio .btn) */
+  --pn-tab-bg-active: #0062cc;  /* cor ativa (igual custom-radio .btn.active) */
+  --pn-tab-text: #ffffff;
+  /*--pn-tab-border: rgba(255,255,255,.22);*/
+}
+
+/* Remove “cara de tabs” padrão */
+.estab-tabs-prenatal .nav-tabs{
+  border-bottom: 0 !important;
+  display: inline-flex !important;   /* compacto */
+  gap: 0 !important;                  /* colado */
+}
+
+/* Remove margens do li */
+.estab-tabs-prenatal .nav-tabs .nav-item{
+  margin: 0 !important;
+}
+
+/* Cada aba vira um botão */
+.estab-tabs-prenatal .nav-tabs .nav-link{
+  background-color: var(--pn-tab-bg) !important;
+  color: var(--pn-tab-text) !important;
+
+  border: 1px solid var(--pn-tab-bg) !important; /* borda "sumida" */
+  border-radius: 0 !important;                   /* SEM round interno */
+  margin: 0 !important;
+
+  padding: .38rem .80rem !important;
+  font-weight: 600 !important;
+  line-height: 1.1 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* evita que o tema coloque underline/bordas estranhas */
+  box-shadow: none !important;
+}
+
+/* Cria o “filete” separador entre botões */
+.estab-tabs-prenatal .nav-tabs .nav-item + .nav-item .nav-link{
+  border-left: 1px solid var(--pn-tab-border) !important;
+}
+
+/* Arredonda APENAS as extremidades do grupo */
+.estab-tabs-prenatal .nav-tabs .nav-item:first-child .nav-link{
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+}
+.estab-tabs-prenatal .nav-tabs .nav-item:last-child .nav-link{
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+/* Aba ativa */
+.estab-tabs-prenatal .nav-tabs .nav-link.active{
+  background-color: var(--pn-tab-bg-active) !important;
+  border-color: var(--pn-tab-bg-active) !important;
+  color: #fff !important;
+}
+
+/* Hover/focus com mesma lógica do ativo */
+.estab-tabs-prenatal .nav-tabs .nav-link:hover,
+.estab-tabs-prenatal .nav-tabs .nav-link:focus{
+  background-color: var(--pn-tab-bg-active) !important;
+  border-color: var(--pn-tab-bg-active) !important;
+  color: #fff !important;
+}
+
+/* Se o AdminLTE tentar “puxar” a aba ativa para baixo (efeito tab),
+   remove qualquer deslocamento */
+.estab-tabs-prenatal .nav-tabs .nav-link.active{
+  transform: none !important;
+}
+
+/* Opcional: header do card não “esticando” nada */
+.estab-tabs-prenatal .card-header{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+}
+
+/* =========================================================
+   Título da página com botão de ajuda (canto direito)
+   ========================================================= */
+
+.panel-title-custom.panel-title-with-help{
+  position: relative;
+  padding-right: 56px; /* espaço para o botão */
+}
+
+/* Botão (ícone) no canto direito do título */
+.panel-title-custom.panel-title-with-help .btn-help-toggle{
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  font-size: 26px !important;
+  box-shadow: none !important;
+}
+
+.panel-title-custom.panel-title-with-help .btn-help-toggle:hover,
+.panel-title-custom.panel-title-with-help .btn-help-toggle:focus{
+  color: #dbe6ff !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Opcional: melhora acessibilidade visual no foco */
+.panel-title-custom.panel-title-with-help .btn-help-toggle:focus{
+  filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
+}

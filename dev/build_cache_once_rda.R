@@ -12,6 +12,7 @@ source(file.path("R", "cache_utils.R"))
 source(file.path("R", "global_data_call.R"))
 source(file.path("R", "global_data_indicadores.R"))
 source(file.path("R", "global_data_obitos.R"))
+source(file.path("R", "global_data_referencias.R"))  # NOVO
 
 # Garante a pasta de cache existente
 try(.ensure_cache_dir(), silent = TRUE)
@@ -19,7 +20,6 @@ try(.ensure_cache_dir(), silent = TRUE)
 ok <- function(nome, obj) {
   nlinhas <- tryCatch({
     if (is.list(obj)) {
-      # Soma linhas apenas de data.frames dentro de listas
       sum(sapply(obj, function(x) if (is.data.frame(x)) nrow(x) else 0))
     } else if (is.data.frame(obj)) {
       nrow(obj)
@@ -47,8 +47,11 @@ if (inherits(obj3, "try-error")) stop(obj3) else ok("obitos_data", obj3)
 obj4 <- try(load_series_data(rebuild = TRUE), silent = TRUE)
 if (inherits(obj4, "try-error")) stop(obj4) else ok("series_data", obj4)
 
+obj5 <- try(load_referencias_data(rebuild = TRUE), silent = TRUE)  # NOVO
+if (inherits(obj5, "try-error")) stop(obj5) else ok("referencias_data", obj5)
+
 # Checagem simples: confirma existência dos .rda agregados
-agg <- c("call_data", "indicadores_data", "obitos_data", "series_data")
+agg <- c("call_data", "indicadores_data", "obitos_data", "series_data", "referencias_data")
 agg_files <- vapply(agg, cache_file, character(1))
 missing <- agg_files[!file.exists(agg_files)]
 if (length(missing)) {

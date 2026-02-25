@@ -1,0 +1,13 @@
+name: novoteste
+title: novoteste
+username: josecarlosinfo
+account: josecarlosinfo
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15358841
+bundleId: 10866100
+url: https://josecarlosinfo.shinyapps.io/novoteste/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Orientações para configuração do ambiente de trabalho do app.pdf|utils.txt

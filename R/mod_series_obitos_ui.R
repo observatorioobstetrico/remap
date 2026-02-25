@@ -56,9 +56,6 @@ mod_series_obitos_ui <- function(id) {
 
       "))
     ),
-    fluidRow(
-      column(12, tags$div(class = "panel-title-custom", "Séries de Mortalidade e Morbidade Materna"))
-    ),
 
     # Inclui shinyjs para usar show()/hide()
     shinyjs::useShinyjs(),

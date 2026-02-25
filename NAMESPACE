@@ -2,6 +2,7 @@
 
 export(app_server)
 export(app_ui)
+export(load_referencias_data)
 export(mod_analise_cruzada_server)
 export(mod_analise_cruzada_ui)
 export(mod_home_server)

@@ -24,7 +24,7 @@ mod_analise_cruzada_server <- function(id, data_list) {
       # Pega a janela final de até 7 anos; se houver menos, usa todo o intervalo
       min_ano <- min(anos)
       max_ano <- max(anos)
-      start   <- if ((max_ano - 7) >= min_ano) max_ano - 7 else min_ano
+      start   <- if ((max_ano - 8) >= min_ano) max_ano - 8 else min_ano
 
       updateSliderInput(
         session, "selectAnoAC",

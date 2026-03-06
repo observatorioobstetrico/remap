@@ -16,7 +16,7 @@ mod_robson_ui <- function(id) {
           div(
             style = "overflow-y:auto; padding:10px; height:100%;",
             tags$p(style = "font-size:16px; font-style:italic;",
-                   "Obs: os dados de 2024 são preliminares."),
+                   "Obs: os dados de 2025 são preliminares."),
             hr(),
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
@@ -27,7 +27,7 @@ mod_robson_ui <- function(id) {
             uiOutput(ns("filtros_locais")),
             hr(),
             tags$h5(class = "section-header", "Selecione o ano:"),
-            numericInput(ns("ano"), NULL, value = NA, min = 2014, max = 2024, step = 1),
+            numericInput(ns("ano"), NULL, value = NA, min = 2014, max = 2025, step = 1),
 
             hr(),
 

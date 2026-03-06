@@ -36,25 +36,20 @@ mod_estabelecimentos_server <- function(id, data_list) {
               tags$b("O que esta tela mostra?"),
               br(),
               "Esta tela lista, para cada município pertencente ao nível de análise selecionado, os estabelecimentos de referência definidos para: ",
-              tags$b("Baixo Risco (Partos)"), ", ", tags$b("Alto Risco (Partos / Ambulatório de Gestação e Puerpério)"), " e ", tags$b("Pós-natal (A-SEG – Alto Risco)"), "."
+              tags$b("Baixo Risco (Maternidade)"), ", ", tags$b("Alto Risco (AGPAR e Maternidade)"), " e ", tags$b("A-SEG (Crianças de Alto Risco)"), "."
             ),
             tags$hr(),
             tags$p(
-              tags$b("Baixo Risco (Partos): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) para ",
-              tags$b("Partos de Baixo Risco"), "."
+              tags$b("Baixo Risco (Maternidade): "),
+              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Maternidade de Baixo Risco de Referência."
             ),
             tags$p(
-              tags$b("Alto Risco (Partos / Ambulatório de Gestação e Puerpério): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) para ",
-              tags$b("Ambulatório de Gestação e Puerpério de Alto Risco"), " e ",
-              tags$b("Partos de Alto Risco"), "."
+              tags$b("Alto Risco (AGPAR e Maternidade): "),
+              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Ambulatório de Gestação e Puerpério de Alto Risco (AGPAR) e Maternidade de Alto Risco de Referência."
             ),
             tags$p(
-              tags$b("Pós-natal (A-SEG – Alto Risco): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) para ",
-              tags$b("Acompanhamento de Crianças de Alto Risco (A-SEG)"), " — ",
-              tags$b("Pós Natal"), "."
+              tags$b("A-SEG (Crianças de Alto Risco): "),
+              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Ambulatório de Acompanhamento de Crianças de Alto Risco Prioritariamente Egressas de Unidade Neonatal (A-SEG)."
             ),
             tags$hr(),
             tags$p(
@@ -79,20 +74,11 @@ mod_estabelecimentos_server <- function(id, data_list) {
       if (is.null(x)) return(NA_character_)
       y <- as.character(x)
 
-      # remove NBSP e outros espaços problemáticos
       y <- gsub("\u00A0", " ", y, fixed = TRUE)
-
-      # normalização básica
       y <- trimws(y)
-
-      # colapsa múltiplos espaços internos
       y <- gsub("\\s+", " ", y)
-
-      # translit + caixa alta
       y <- iconv(y, from = "UTF-8", to = "ASCII//TRANSLIT")
       y <- toupper(y)
-
-      # trim novamente (após iconv pode surgir espaço)
       y <- trimws(y)
       y
     }
@@ -124,7 +110,6 @@ mod_estabelecimentos_server <- function(id, data_list) {
       df[, keep, drop = FALSE]
     }
 
-    # match robusto
     match_idx <- function(vec, target) {
       vx <- vapply(vec, normalize_str, character(1))
       tg <- normalize_str(target)
@@ -133,8 +118,95 @@ mod_estabelecimentos_server <- function(id, data_list) {
       idx <- which(vx == tg)
       if (length(idx) > 0) return(idx)
 
-      # fallback substring
       which(grepl(tg, vx, fixed = TRUE))
+    }
+
+    is_blank_value <- function(x) {
+      if (is.null(x)) return(rep(TRUE, 0))
+      if (is.list(x)) x <- unlist(x, use.names = FALSE)
+
+      if (is.character(x)) {
+        y <- trimws(x)
+        return(is.na(y) | y == "")
+      }
+
+      if (is.factor(x)) {
+        y <- trimws(as.character(x))
+        return(is.na(y) | y == "")
+      }
+
+      if (inherits(x, c("Date", "POSIXct", "POSIXt"))) {
+        return(is.na(x))
+      }
+
+      is.na(x)
+    }
+
+    # Remove apenas linhas vazias excedentes dentro de cada grupo.
+    # Regra:
+    # - se um grupo possui ao menos 1 linha com algum detalhe preenchido,
+    #   removemos as linhas totalmente vazias desse grupo;
+    # - se um grupo possui somente linhas vazias nos detalhes,
+    #   preservamos 1 linha para que o município/supervisão continue aparecendo.
+    prune_blank_rows_within_group <- function(df, group_col = NULL) {
+      if (!is.data.frame(df) || nrow(df) == 0) return(df)
+      if (is.null(group_col) || !group_col %in% names(df)) return(df)
+
+      # Não faz sentido manter grupos sem identificador visual
+      keep_group <- !is_blank_value(df[[group_col]])
+      df <- df[keep_group, , drop = FALSE]
+      if (nrow(df) == 0) return(df)
+
+      detail_cols <- setdiff(names(df), group_col)
+      if (length(detail_cols) == 0) return(df)
+
+      has_any_detail <- Reduce(
+        `|`,
+        lapply(detail_cols, function(col) !is_blank_value(df[[col]]))
+      )
+
+      grp_key <- vapply(df[[group_col]], normalize_str, character(1))
+      keep <- rep(TRUE, nrow(df))
+
+      for (g in unique(grp_key)) {
+        idx <- which(grp_key == g)
+        grp_has_detail <- any(has_any_detail[idx])
+
+        if (grp_has_detail) {
+          # Remove apenas as linhas totalmente vazias deste grupo
+          keep[idx] <- has_any_detail[idx]
+        } else {
+          # Todas as linhas estão vazias: mantém apenas uma linha
+          keep[idx] <- FALSE
+          keep[idx[1]] <- TRUE
+        }
+      }
+
+      df[keep, , drop = FALSE]
+    }
+
+    order_display_df <- function(df, group_col = NULL) {
+      if (!is.data.frame(df) || nrow(df) == 0) return(df)
+
+      ord_cols <- character(0)
+
+      if (!is.null(group_col) && group_col %in% names(df)) {
+        ord_cols <- c(ord_cols, group_col)
+      }
+
+      extra_cols <- names(df)[vapply(df, function(col) {
+        is.character(col) || is.factor(col)
+      }, logical(1))]
+
+      extra_cols <- setdiff(extra_cols, ord_cols)
+      ord_cols <- c(ord_cols, extra_cols)
+
+      if (length(ord_cols) == 0) return(df)
+
+      ord_list <- lapply(ord_cols, function(col) normalize_str(df[[col]]))
+      ord <- do.call(order, c(ord_list, list(na.last = TRUE)))
+
+      df[ord, , drop = FALSE]
     }
 
     # ------------------------------------------------------------------
@@ -178,7 +250,6 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
     # ------------------------------------------------------------------
     # 4) UI dinâmica: filtro secundário + terciário
-    #     (COM DIGITAÇÃO: pickerInput + live-search)
     # ------------------------------------------------------------------
     output$secondary_filter_ui <- renderUI({
       req(input$nivel_selection)
@@ -229,7 +300,6 @@ mod_estabelecimentos_server <- function(id, data_list) {
         req(input$nivel_selection)
         level <- input$nivel_selection
 
-        # Continua sem 3º filtro para RRAS e REGIÃO DE SAÚDE
         if (level %in% c("RRAS", "REGIÃO DE SAÚDE")) return(NULL)
 
         sp <- input$sp_detail %||% "NÃO"
@@ -366,34 +436,28 @@ mod_estabelecimentos_server <- function(id, data_list) {
     cols_baixo_all <- c(
       "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICÍPIO DA RRAS",
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
-      "ESTABELECIMENTO DE REFERÊNCIA PARA PARTOS DE BAIXO RISCO",
-      "MUNICÍPIO DO ESTABELECIMENTO (PBR)"
+      "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
+      "MUNICÍPIO DO ESTABELECIMENTO"
     )
 
     cols_posnatal_all <- c(
       "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICÍPIO DA RRAS",
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
-      "ESTABELECIMENTO DE REFERÊNCIA PARA ACOMPANHAMENTO PÓS NATAL (A-SEG)",
+      "AMBULATÓRIO DE ACOMPANHAMENTO DE CRIANÇAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)",
       "MUNICÍPIO DO ESTABELECIMENTO (A-SEG)"
     )
 
     cols_agpar_all <- c(
       "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICÍPIO DA RRAS",
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
-      "ESTABELECIMENTO DE REFERÊNCIA PARA ATENDIMENTO AMBULATORIAL",
-      "MUNICÍPIO DO ESTABELECIMENTO (AA)",
-      "ESTABELECIMENTO DE REFERÊNCIA MATERNIDADE DE ALTO RISCO (AGPAR)",
+      "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
       "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
-      "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-      "ESTABELECIMENTO DE REFERÊNCIA PARA PARTOS DE ALTO RISCO",
-      "MUNICÍPIO DO ESTABELECIMENTO (PAR)",
-      "SUPERVISÃO DE SAÚDE (PAR)",
-      "É REFERÊNCIA PARA AGPAR?"
+      "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
+      "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO"
     )
 
     # ------------------------------------------------------------------
-    # 7) Contexto SP (quando supervisões fazem sentido)
-    #    >>> ALTERAÇÃO: REGIÃO "SÃO PAULO" deve se comportar como RRAS 6
+    # 7) Contexto SP
     # ------------------------------------------------------------------
     is_sp_context <- function(level, sp_detail, is_rras6, is_regiao_sp, is_drs_gsp, is_muni_sp) {
       isTRUE(is_rras6 || is_regiao_sp || is_drs_gsp || is_muni_sp || sp_detail)
@@ -401,11 +465,6 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
     # ------------------------------------------------------------------
     # 8) Regras de colunas por tabela e contexto
-    #    >>> ALTERAÇÃO CRÍTICA:
-    #    - REGIÃO DE SAÚDE: por padrão NÃO mostra supervisões
-    #    - EXCEÇÃO: se REGIÃO == "SÃO PAULO" (is_regiao_sp), então:
-    #         * BAIXO/PÓS: remover MUNICÍPIO e mostrar SUPERVISÃO
-    #         * AGPAR: remover MUNICÍPIO e mostrar SUPERVISÕES (AGPAR/PAR)
     # ------------------------------------------------------------------
     compute_desired_cols <- function(table_type, ctx) {
 
@@ -427,67 +486,29 @@ mod_estabelecimentos_server <- function(id, data_list) {
         cols_baixo_all
       )
 
-      # remover RRAS/DRS/REGIÃO/COORDENADORIA em TODOS os níveis
       desired <- setdiff(desired, c("RRAS", "DRS", "REGIÃO DE SAÚDE", "COORDENADORIA DE SAÚDE"))
 
-      # fora de contexto SP: remover supervisões
       if (!sp_ctx) {
-        desired <- setdiff(desired, c(
-          "SUPERVISÃO DE SAÚDE",
-          "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-          "SUPERVISÃO DE SAÚDE (PAR)"
-        ))
+        desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
       }
 
-      # RRAS6
+      # RRAS 6
       if (level == "RRAS" && is_rras6) {
-        if (table_type %in% c("baixo", "posnatal")) {
+        if (table_type %in% c("baixo", "posnatal", "agpar")) {
           desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
-          if (sp_ctx) desired <- unique(c(desired, "SUPERVISÃO DE SAÚDE"))
-        }
-        if (table_type == "agpar") {
-          desired <- setdiff(desired, c(
-            "MUNICÍPIO DA RRAS",
-            "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
-            "MUNICÍPIO DO ESTABELECIMENTO (PAR)"
-          ))
-          if (sp_ctx) desired <- unique(c(
-            desired,
-            "SUPERVISÃO DE SAÚDE",
-            "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-            "SUPERVISÃO DE SAÚDE (PAR)"
-          ))
+          if (sp_ctx) desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
         }
       }
 
       # REGIÃO DE SAÚDE
       if (level == "REGIÃO DE SAÚDE") {
         if (is_regiao_sp) {
-          # São Paulo: comporta como RRAS 6 (por supervisão)
-          if (table_type %in% c("baixo", "posnatal")) {
+          if (table_type %in% c("baixo", "posnatal", "agpar")) {
             desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
-            desired <- unique(c(desired, "SUPERVISÃO DE SAÚDE"))
-          }
-          if (table_type == "agpar") {
-            desired <- setdiff(desired, c(
-              "MUNICÍPIO DA RRAS",
-              "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
-              "MUNICÍPIO DO ESTABELECIMENTO (PAR)"
-            ))
-            desired <- unique(c(
-              desired,
-              "SUPERVISÃO DE SAÚDE",
-              "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-              "SUPERVISÃO DE SAÚDE (PAR)"
-            ))
+            desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
           }
         } else {
-          # Outras regiões: nunca mostrar supervisões
-          desired <- setdiff(desired, c(
-            "SUPERVISÃO DE SAÚDE",
-            "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-            "SUPERVISÃO DE SAÚDE (PAR)"
-          ))
+          desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
         }
       }
 
@@ -495,31 +516,12 @@ mod_estabelecimentos_server <- function(id, data_list) {
       if (level == "DRS") {
         if (!sp_detail) {
           if (is_drs_gsp) {
-            if (table_type %in% c("baixo", "posnatal")) {
-              desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
-            }
-            if (table_type == "agpar") {
-              desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
-              if (sp_ctx) desired <- unique(c(
-                desired,
-                "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-                "SUPERVISÃO DE SAÚDE (PAR)"
-              ))
-            }
+            desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
           }
         } else {
-          if (table_type %in% c("baixo", "posnatal")) {
+          if (table_type %in% c("baixo", "posnatal", "agpar")) {
             desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
-            if (sp_ctx) desired <- unique(c(desired, "SUPERVISÃO DE SAÚDE"))
-          }
-          if (table_type == "agpar") {
-            desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
-            if (sp_ctx) desired <- unique(c(
-              desired,
-              "SUPERVISÃO DE SAÚDE",
-              "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-              "SUPERVISÃO DE SAÚDE (PAR)"
-            ))
+            if (sp_ctx) desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
           }
         }
       }
@@ -528,35 +530,14 @@ mod_estabelecimentos_server <- function(id, data_list) {
       if (level == "MUNICIPAL") {
         if (!sp_detail) {
           if (is_muni_sp) {
-            if (table_type %in% c("baixo", "posnatal")) {
-              if (sp_ctx) desired <- unique(c(desired, "SUPERVISÃO DE SAÚDE"))
-            }
-            if (table_type == "agpar") {
-              if (sp_ctx) desired <- unique(c(
-                desired,
-                "SUPERVISÃO DE SAÚDE",
-                "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-                "SUPERVISÃO DE SAÚDE (PAR)"
-              ))
+            if (table_type %in% c("baixo", "posnatal", "agpar")) {
+              if (sp_ctx) desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
             }
           }
         } else {
-          if (table_type %in% c("baixo", "posnatal")) {
+          if (table_type %in% c("baixo", "posnatal", "agpar")) {
             desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
-            if (sp_ctx) desired <- unique(c(desired, "SUPERVISÃO DE SAÚDE"))
-          }
-          if (table_type == "agpar") {
-            desired <- setdiff(desired, c(
-              "MUNICÍPIO DA RRAS",
-              "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
-              "MUNICÍPIO DO ESTABELECIMENTO (PAR)"
-            ))
-            if (sp_ctx) desired <- unique(c(
-              desired,
-              "SUPERVISÃO DE SAÚDE",
-              "SUPERVISÃO DE SAÚDE DO ESTABELECIMENTO (AGPAR)",
-              "SUPERVISÃO DE SAÚDE (PAR)"
-            ))
+            if (sp_ctx) desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
           }
         }
       }
@@ -565,7 +546,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
     }
 
     # ------------------------------------------------------------------
-    # 9) Filtragem por contexto - nunca retorna tudo se falhar
+    # 9) Filtragem por contexto
     # ------------------------------------------------------------------
     filter_df_by_ctx <- function(df, ctx) {
 
@@ -618,7 +599,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
     }
 
     # ------------------------------------------------------------------
-    # 10) Renomeia apenas para display (MUNICÍPIO DA RRAS -> MUNICÍPIO)
+    # 10) Renomeia apenas para display
     # ------------------------------------------------------------------
     rename_for_display <- function(df) {
       if ("MUNICÍPIO DA RRAS" %in% names(df)) {
@@ -629,7 +610,6 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
     # ------------------------------------------------------------------
     # 10.1) Determina coluna-chave (Município vs Supervisão)
-    #     >>> ALTERAÇÃO: REGIÃO "SÃO PAULO" deve agrupar por supervisão
     # ------------------------------------------------------------------
     determine_group_col <- function(df, ctx) {
       level <- ctx$level
@@ -661,7 +641,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "Baixo Risco (Partos)",
+                title = "Baixo Risco (Maternidade)",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -674,7 +654,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "Ambulatório de Gestação e Puerpério de Alto Risco e Partos de Alto Risco",
+                title = "Alto Risco (AGPAR e Maternidade)",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -687,7 +667,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "Acompanhamento de Crianças de Alto Risco (A-SEG) — Pós Natal",
+                title = "A-SEG (Crianças de Alto Risco)",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -711,10 +691,10 @@ mod_estabelecimentos_server <- function(id, data_list) {
                 solidHeader = TRUE,
                 width       = 12,
                 type        = "tabs",
-                selected    = "Baixo Risco (Partos)",
-                tabPanel("Baixo Risco (Partos)", reactable::reactableOutput(ns("table_baixo"))),
-                tabPanel("Alto Risco (Partos / Ambulatório de Gestação e Puerpério)", reactable::reactableOutput(ns("table_agpar"))),
-                tabPanel("Pós-natal (A-SEG – Alto Risco)", reactable::reactableOutput(ns("table_posnatal")))
+                selected    = "Baixo Risco (Maternidade)",
+                tabPanel("Baixo Risco (Maternidade)", reactable::reactableOutput(ns("table_baixo"))),
+                tabPanel("Alto Risco (AGPAR e Maternidade)", reactable::reactableOutput(ns("table_agpar"))),
+                tabPanel("A-SEG (Crianças de Alto Risco)", reactable::reactableOutput(ns("table_posnatal")))
               )
             )
           )
@@ -723,7 +703,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
     })
 
     # ------------------------------------------------------------------
-    # 12) Reactable — flat + expandível (sem emptyMessage)
+    # 12) Reactable
     # ------------------------------------------------------------------
     base_coldef <- reactable::colDef(
       align = "center",
@@ -775,12 +755,15 @@ mod_estabelecimentos_server <- function(id, data_list) {
         return(build_reactable_flat(df))
       }
 
+      df <- order_display_df(df, group_col = group_col)
+
       df$.grp_key <- vapply(df[[group_col]], normalize_str, character(1))
 
       first_idx <- which(!duplicated(df$.grp_key))
       summary_df <- df[first_idx, , drop = FALSE]
 
       main_df <- summary_df[, c(group_col, ".grp_key"), drop = FALSE]
+      main_df <- order_display_df(main_df, group_col = group_col)
 
       col_defs <- list()
       col_defs[[".grp_key"]] <- reactable::colDef(show = FALSE)
@@ -805,6 +788,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
           sub[[group_col]] <- NULL
           sub$.grp_key <- NULL
+          sub <- order_display_df(sub)
 
           if (ncol(sub) == 0) {
             return(tags$div(style = "padding: 8px;", "Sem detalhes adicionais."))
@@ -828,7 +812,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
     }
 
     # ------------------------------------------------------------------
-    # 13) Render das tabelas (sem “piscada”)
+    # 13) Render das tabelas
     # ------------------------------------------------------------------
     render_table_core <- function(df_raw, table_type, ctx) {
 
@@ -840,7 +824,11 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
       group_col <- determine_group_col(df, ctx)
 
+      df <- prune_blank_rows_within_group(df, group_col = group_col)
+      df <- order_display_df(df, group_col = group_col)
+
       if (nrow(df) == 0 && isTRUE(is_recent_change())) {
+        shiny::invalidateLater(800, session)
         return(build_reactable_placeholder("Carregando..."))
       }
 

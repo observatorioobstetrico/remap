@@ -26,7 +26,7 @@ mod_analise_cruzada_ui <- function(id) {
             style = "max-height: 168vh; overflow-y: auto; padding-right: 10px;",
 
             tags$p(style = "font-size 16px; font-style: italic;",
-                   "Obs: os dados de 2024 são preliminares."),
+                   "Obs: os dados de 2025 são preliminares."),
 
             hr(),
 
@@ -36,8 +36,8 @@ mod_analise_cruzada_ui <- function(id) {
             sliderInput(
               ns("selectAnoAC"),
               "Selecione o(s) ano(s) de análise:",
-              min   = 1996, max = 2024,
-              value = c(2017, 2024),
+              min   = 1996, max = 2025,
+              value = c(2017, 2025),
               sep   = ""
             ),
 

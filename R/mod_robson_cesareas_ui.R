@@ -16,7 +16,7 @@ mod_robson_cesareas_ui <- function(id) {
           div(
             style = "overflow-y:auto; padding:10px; height:100%;",
             tags$p(style = "font-size:16px; font-style:italic;",
-                   "Obs: os dados de 2024 são preliminares."),
+                   "Obs: os dados de 2025 são preliminares."),
             hr(),
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
@@ -34,7 +34,7 @@ mod_robson_cesareas_ui <- function(id) {
             conditionalPanel(
               condition = sprintf("input['%s'] === 'Todos'", ns("grupo")),
               tags$h5(class = "section-header", "Selecione o ano:"),
-              numericInput(ns("fixedAno"), NULL, value = NA, min = 2014, max = 2024, step = 1)
+              numericInput(ns("fixedAno"), NULL, value = NA, min = 2014, max = 2025, step = 1)
             ),
 
             # Intervalo quando grupo específico
@@ -42,8 +42,8 @@ mod_robson_cesareas_ui <- function(id) {
               condition = sprintf("input['%s'] !== 'Todos'", ns("grupo")),
               tags$h5(class = "section-header", "Selecione o intervalo de anos:"),
               sliderInput(ns("anos"), NULL,
-                          min = 2014, max = 2024,
-                          value = c(2014, 2024),
+                          min = 2014, max = 2025,
+                          value = c(2014, 2025),
                           step = 1, sep = "")
             ),
             hr(),

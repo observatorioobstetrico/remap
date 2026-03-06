@@ -78,8 +78,8 @@ mod_series_obitos_ui <- function(id) {
               width = 3,
               sliderInput(
                 ns("anos"), "Intervalo de anos:",
-                min = 2012, max = 2024,
-                value = c(2012, 2023), step = 1, sep = ""
+                min = 2012, max = 2025,
+                value = c(2012, 2024), step = 1, sep = ""
               )
             ),
             column(
@@ -101,7 +101,7 @@ mod_series_obitos_ui <- function(id) {
           ),
 
           conditionalPanel(
-            condition = "input.anos[0] == 2024 || input.anos[1] == 2024",
+            condition = "input.anos[0] == 2025 || input.anos[1] == 2025",
             ns = ns,
             fluidRow(
               column(
@@ -110,8 +110,8 @@ mod_series_obitos_ui <- function(id) {
                   <div style='text-align: left;'>
                     <b class='fonte-grande'>
                       <i class='fa-solid fa-circle-info'></i>
-                      &nbsp; Os dados de 2024 são preliminares<br/>
-                      (atualizados em 09 de maio de 2025)
+                      &nbsp; Os dados de 2025 são preliminares<br/>
+                      (atualizados em 26 de fevereiro de 2026)
                     </b>
                   </div>
                   <span style='display:block;margin-bottom:15px;'></span>

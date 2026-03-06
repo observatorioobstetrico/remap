@@ -34,7 +34,7 @@ mod_nascimentos_ui <- function(id) {
             # Observação
             tags$p(
               style = "font-size:16px;font-style:italic;",
-              "Obs: os dados de 2024 são preliminares."
+              "Obs: os dados de 2025 são preliminares."
             ),
 
             # # Última atualização (se existir no global)
@@ -60,8 +60,8 @@ mod_nascimentos_ui <- function(id) {
             sliderInput(
               ns("anos"), NULL,
               min   = 1996,   # será sobrescrito no server
-              max   = 2024,   # será sobrescrito no server
-              value = c(1996, 2024),
+              max   = 2025,   # será sobrescrito no server
+              value = c(1996, 2025),
               step  = 1, sep = ""
             )
           )

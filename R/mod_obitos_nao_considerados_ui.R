@@ -29,7 +29,7 @@ mod_obitos_nao_considerados_ui <- function(id) {
           div(
             style = "max-height: 100vh; overflow-y: auto; padding-right: 10px;",
             tags$p(style = "font-size: 16px; font-style: italic;",
-                   "Obs: os dados de 2024 são preliminares."),
+                   "Obs: os dados de 2025 são preliminares."),
 
             hr(),
 

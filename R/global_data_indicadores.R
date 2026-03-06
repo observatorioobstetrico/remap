@@ -24,10 +24,10 @@ load_indicadores_data <- function(path_data = app_sys("app", "data"), rebuild = 
     file.path(path_data, "RRAS-MUNICIPIO.xlsx"),
     file.path(path_data, "tabela_auxiliar_municipios.csv"),
     file.path(path_data, "data_por_extenso.RDS"),
-    file.path(path_data, "dados_oobr_indicadores_obstetricos_sinasc_1996_2024.csv.gz"),
-    file.path(path_data, "dados_oobr_indicadores_obstetricos_prematuridade_consultas_1996_2024.csv.gz"),
-    file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_1996_2024.csv.gz"),
-    file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_cesareas_1996_2024.csv.gz")
+    file.path(path_data, "dados_oobr_indicadores_obstetricos_sinasc_1996_2025.csv.gz"),
+    file.path(path_data, "dados_oobr_indicadores_obstetricos_prematuridade_consultas_1996_2025.csv.gz"),
+    file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_1996_2025.csv.gz"),
+    file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_cesareas_1996_2025.csv.gz")
   )
 
   with_cache("indicadores_data", deps, builder = function() {
@@ -59,19 +59,19 @@ load_indicadores_data <- function(path_data = app_sys("app", "data"), rebuild = 
 
     # --- Leitura via cache .rda (readr já trata .gz) ---
     sinasc <- cached_csv(
-      file.path(path_data, "dados_oobr_indicadores_obstetricos_sinasc_1996_2024.csv.gz"),
+      file.path(path_data, "dados_oobr_indicadores_obstetricos_sinasc_1996_2025.csv.gz"),
       rebuild = rebuild
     )
     premat_cons <- cached_csv(
-      file.path(path_data, "dados_oobr_indicadores_obstetricos_prematuridade_consultas_1996_2024.csv.gz"),
+      file.path(path_data, "dados_oobr_indicadores_obstetricos_prematuridade_consultas_1996_2025.csv.gz"),
       rebuild = rebuild
     )
     robson <- cached_csv(
-      file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_1996_2024.csv.gz"),
+      file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_1996_2025.csv.gz"),
       rebuild = rebuild
     )
     robson_cesarea <- cached_csv(
-      file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_cesareas_1996_2024.csv.gz"),
+      file.path(path_data, "dados_oobr_indicadores_obstetricos_robson_cesareas_1996_2025.csv.gz"),
       rebuild = rebuild
     )
     tabela_aux_municipios <- cached_csv(

@@ -8,9 +8,9 @@ load_obitos_data <- function(path_data = app_sys("app", "data"), rebuild = FALSE
 
   deps <- c(
     file.path(path_data, "RRAS-MUNICIPIO.xlsx"),
-    file.path(path_data, "dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2024.csv"),
-    file.path(path_data, "dados_oobr_obitos_grav_puerp_desconsiderados_1996_2024.csv"),
-    file.path(path_data, "dados_oobr_obitos_grav_puerp_analise_cruzada_1996_2024.csv")
+    file.path(path_data, "dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2025.csv"),
+    file.path(path_data, "dados_oobr_obitos_grav_puerp_desconsiderados_1996_2025.csv"),
+    file.path(path_data, "dados_oobr_obitos_grav_puerp_analise_cruzada_1996_2025.csv")
   )
 
   with_cache("obitos_data", deps, builder = function() {
@@ -38,9 +38,9 @@ load_obitos_data <- function(path_data = app_sys("app", "data"), rebuild = FALSE
       dplyr::left_join(rras_full, df_raw, by = c("cod_ibge" = "codigo"))
     }
 
-    df_oficiais <- read_and_expand("dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2024.csv")
-    df_nao_cons <- read_and_expand("dados_oobr_obitos_grav_puerp_desconsiderados_1996_2024.csv")
-    df_ext      <- read_and_expand("dados_oobr_obitos_grav_puerp_analise_cruzada_1996_2024.csv")
+    df_oficiais <- read_and_expand("dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2025.csv")
+    df_nao_cons <- read_and_expand("dados_oobr_obitos_grav_puerp_desconsiderados_1996_2025.csv")
+    df_ext      <- read_and_expand("dados_oobr_obitos_grav_puerp_analise_cruzada_1996_2025.csv")
 
     list(
       oficiais         = df_oficiais,

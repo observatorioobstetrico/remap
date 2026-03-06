@@ -25,7 +25,7 @@ mod_prenatal_ui <- function(id) {
           div(
             style = "overflow-y:auto; padding:10px; height:100%;",
             tags$p(style="font-size:16px;font-style:italic;",
-                   "Obs: os dados de 2024 são preliminares."),
+                   "Obs: os dados de 2025 são preliminares."),
             hr(),
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
@@ -35,8 +35,8 @@ mod_prenatal_ui <- function(id) {
             ),
             uiOutput(ns("filtros_locais")), hr(),
             tags$h5(class = "section-header", "Selecione o intervalo de anos:"),
-            sliderInput(ns("anos"), NULL, min = 1996, max = 2024,
-                        value = c(1996, 2024), sep = "", step = 1),
+            sliderInput(ns("anos"), NULL, min = 1996, max = 2025,
+                        value = c(1996, 2025), sep = "", step = 1),
             hr(),
 
             #---- Informações e opções adicionais ----

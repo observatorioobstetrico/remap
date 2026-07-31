@@ -14,7 +14,52 @@ mod_obitos_oficiais_ui <- function(id) {
     fluidRow(
       column(
         width = 12,
-        tags$div(class = "panel-title-custom", "Óbitos Maternos Oficiais")
+        tags$div(
+          class = "panel-title-custom panel-title-with-help estab-title-with-actions",
+          tags$span(class = "obitos-title-text", "Óbitos classificados como morte materna"),
+          tags$div(
+            class = "estab-title-actions",
+            shiny::downloadLink(
+              ns("download_OM_xlsx"),
+              shiny::icon("download"),
+              class = "btn-help-toggle btn-estab-download-toggle",
+              `aria-label` = "Baixar tabela em xlsx",
+              title = "Baixar tabela em xlsx"
+            )
+          )
+        )
+      )
+    ),
+    fluidRow(
+      column(
+        width = 12,
+        tags$div(
+          class = "obitos-page-description",
+          tags$p(
+            "Este painel apresenta os óbitos de mulheres ocorridos durante a gestação, parto ou puerpério ",
+            "(até 42 dias após o parto ou até um ano), classificados como morte materna segundo os critérios ",
+            "do Ministério da Saúde e da CID-10."
+          ),
+          tags$p(
+            "Incluem óbitos relacionados a complicações da gestação, parto ou puerpério, bem como doenças ",
+            "agravadas pela gestação."
+          ),
+          tags$p("O painel também pode apresentar registros:"),
+          tags$ul(
+            tags$li("Fora do período gestacional ou puerperal"),
+            tags$li("Com informação ignorada ou inconsistente")
+          ),
+          tags$p(
+            "A variável “Investigação por Comitê de Mortalidade Materna” indica se o caso foi analisado ",
+            "por um comitê responsável pela investigação desses óbitos."
+          ),
+          tags$p(
+            tags$b(
+              "Para consultar a fonte e a definição detalhada das informações, acesse a seção Documentação ",
+              "dos Indicadores, disponível no menu lateral."
+            )
+          )
+        )
       )
     ),
 
@@ -42,7 +87,7 @@ mod_obitos_oficiais_ui <- function(id) {
 
             selectInput(
               ns("nivel"), "Selecione o nível de análise:",
-              choices = c("ESTADUAL", "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+              choices = c("ESTADO DE SP" = "ESTADUAL", "DRS" = "DRS", "RRAS" = "RRAS", "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE", "MUNICIPAL" = "MUNICIPAL"),
               selected = "ESTADUAL"
             ),
 
@@ -85,26 +130,7 @@ mod_obitos_oficiais_ui <- function(id) {
                 "Sem informação"                             = "Sem informação"
               ),
               selected = c("Sim","Não","Sem informação")
-            ),
-
-            hr(),
-
-            #---- Informações e opções adicionais ----
-            tags$h5(class = "section-header", "Informações e opções adicionais"),
-
-            selectInput(ns("download_choice"), "Deseja fazer o download dessa tabela?",
-                        choices = c("Não","Sim"), selected = "Não"),
-            uiOutput(ns("download_ui")),
-
-            #---- Texto descritivo ----
-            tags$p(HTML("Essa tabela contém o número total de óbitos maternos contabilizados pelo Ministério da Saúde. O local de registro dos óbitos é referente ao município de residência da falecida.")),
-            tags$p(HTML("Um óbito de gestantes ou puérperas é considerado como um óbito materno quando a categoria da CID10 referente à causa de morte é uma das categorias definidas pelo Ministério da Saúde.")),
-            tags$p(HTML("É considerado que um óbito materno ocorreu durante a gravidez, parto ou aborto quando os valores das variáveis <code>OBITOGRAV</code> e <code>OBITOPUERP</code>, da base de dados do <code>SIM</code>, são, respectivamente, <code>1 e 3</code> ou <code>1 e 9</code>.")),
-            tags$p(HTML("Óbitos maternos que ocorreram durante o puerpério, até 42 dias após o parto, são aqueles em que os valores das variáveis <code>OBITOGRAV</code> e <code>OBITOPUERP</code> são, respectivamente, <code>2 e 1</code> ou <code>9 e 1</code>, enquanto os óbitos que ocorreram durante o puerpério, entre 43 dias e menos de um ano após o parto, são aqueles em que os valores dessas variáveis são, respectivamente, <code>2 e 2</code> ou <code>9 e 2</code>.")),
-            tags$p(HTML("Óbitos maternos que não ocorreram durante a gravidez ou puerpério são aqueles em que os valores de <code>OBITOGRAV</code> e <code>OBITOPUERP</code> são, respectivamente, <code>2 e 3</code>, <code>2 e 9</code> ou <code>9 e 3</code>.")),
-            tags$p(HTML("Óbitos maternos cujo período de ocorrência é não informado ou ignorado são aqueles em que os valores de <code>OBITOGRAV</code> e <code>OBITOPUERP</code> são, respectivamente, <code>9 e 9</code>.")),
-            tags$p(HTML("Por fim, óbitos maternos cujo período de ocorrência é inconsistente são aqueles em que os valores de <code>OBITOGRAV</code> e <code>OBITOPUERP</code> são, respectivamente, <code>1 e 1</code> ou <code>1 e 2</code>.")),
-            tags$p(HTML("A coluna “Investigação por CMM” indica se os óbitos foram, ou não, investigados por um Comitê de Morte Materna. É considerado que um óbito foi investigado por um Comitê de Morte Materna se o valor da variável <code>FONTEINV</code>, do <code>SIM</code>, for <code>1</code>."))
+            )
           )
         )
       ),
@@ -112,7 +138,7 @@ mod_obitos_oficiais_ui <- function(id) {
       column(
         width = 8,
         bs4Dash::box(
-          title       = "Tabela de Óbitos Maternos Oficiais",
+          title       = "Tabela de óbitos classificados como morte materna",
           status      = "info",
           solidHeader = TRUE,
           width       = NULL,

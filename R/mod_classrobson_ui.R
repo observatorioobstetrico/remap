@@ -21,7 +21,7 @@ mod_robson_ui <- function(id) {
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
               ns("nivel"), NULL,
-              choices  = c("ESTADUAL","RRAS","DRS","REGIÃO DE SAÚDE","MUNICIPAL"),
+              choices  = c("ESTADO DE SP" = "ESTADUAL", "DRS" = "DRS", "RRAS" = "RRAS", "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE", "MUNICIPAL" = "MUNICIPAL"),
               selected = "ESTADUAL"
             ),
             uiOutput(ns("filtros_locais")),

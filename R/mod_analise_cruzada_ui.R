@@ -10,7 +10,17 @@ mod_analise_cruzada_ui <- function(id) {
   tagList(
     fluidRow(
       column(12,
-             tags$div(class="panel-title-custom", "Análise Cruzada")
+             tags$div(
+               class = "panel-title-custom panel-title-with-help",
+               tags$span("Análise Cruzada"),
+               shiny::actionButton(
+                 inputId = ns("help_btn"),
+                 label = NULL,
+                 icon = shiny::icon("circle-question"),
+                 class = "btn-help-toggle",
+                 `aria-label` = "Sobre Análise Cruzada"
+               )
+             )
       )
     ),
     fluidRow(
@@ -44,7 +54,7 @@ mod_analise_cruzada_ui <- function(id) {
             selectInput(
               ns("selectNivelAC"),
               "Selecione o nível de análise:",
-              choices = c("ESTADUAL", "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+              choices = c("ESTADO DE SP" = "ESTADUAL", "DRS" = "DRS", "RRAS" = "RRAS", "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE", "MUNICIPAL" = "MUNICIPAL"),
               selected = "ESTADUAL"
             ),
 

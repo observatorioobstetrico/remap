@@ -13,8 +13,48 @@ mod_obitos_nao_considerados_ui <- function(id) {
     fluidRow(
       column(
         width = 12,
-        tags$div(class = "panel-title-custom",
-                 "Óbitos de Gestantes e Puérperas Não Considerados")
+        tags$div(
+          class = "panel-title-custom panel-title-with-help estab-title-with-actions",
+          tags$span(class = "obitos-title-text", "Óbitos não classificados como morte materna"),
+          tags$div(
+            class = "estab-title-actions",
+            shiny::downloadLink(
+              ns("download_NM_xlsx"),
+              shiny::icon("download"),
+              class = "btn-help-toggle btn-estab-download-toggle",
+              `aria-label` = "Baixar tabela em xlsx",
+              title = "Baixar tabela em xlsx"
+            )
+          )
+        )
+      )
+    ),
+    fluidRow(
+      column(
+        width = 12,
+        tags$div(
+          class = "obitos-page-description",
+          tags$p(
+            "Este painel apresenta os óbitos de mulheres ocorridos durante a gestação, parto ou puerpério ",
+            "(até 42 dias após o parto ou até um ano), que ",
+            tags$b("não foram classificados como morte materna"),
+            ", segundo os critérios do Ministério da Saúde."
+          ),
+          tags$p(
+            "Em geral, incluem óbitos decorrentes de causas não relacionadas diretamente à gestação, como ",
+            "acidentes, violências ou outras causas externas."
+          ),
+          tags$p(
+            "A variável “Investigação por Comitê de Mortalidade Materna” indica se o caso foi analisado ",
+            "por um comitê responsável pela investigação desses óbitos."
+          ),
+          tags$p(
+            tags$b(
+              "Para consultar a fonte e a definição detalhada das informações, acesse a seção Documentação ",
+              "dos Indicadores, disponível no menu lateral."
+            )
+          )
+        )
       )
     ),
     fluidRow(
@@ -38,7 +78,7 @@ mod_obitos_nao_considerados_ui <- function(id) {
             numericInput(ns("ano"), "Selecione o ano de análise:", value = NA),
             selectInput(
               ns("nivel"), "Selecione o nível de análise:",
-              choices  = c("ESTADUAL", "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+              choices  = c("ESTADO DE SP" = "ESTADUAL", "DRS" = "DRS", "RRAS" = "RRAS", "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE", "MUNICIPAL" = "MUNICIPAL"),
               selected = "ESTADUAL"
             ),
             uiOutput(ns("filtros_locais")),
@@ -67,21 +107,7 @@ mod_obitos_nao_considerados_ui <- function(id) {
               ns("externos"), "Excluir óbitos por causas externas?",
               choices  = "Excluir óbitos por causas externas",
               selected = NULL
-            ),
-
-            hr(),
-
-            #---- Informações e opções adicionais ----
-            tags$h5(class = "section-header", "Informações e opções adicionais"),
-
-            selectInput(ns("download_choice"),
-                        "Deseja fazer o download dessa tabela?",
-                        choices = c("Não", "Sim"), selected = "Não"),
-            uiOutput(ns("download_ui")),
-            #---- Texto Descritivo ----
-            tags$p(HTML("Essa tabela contém todos os óbitos de mulheres que ocorreram durante a gravidez, parto ou puerpério (tanto no período de até 42 dias após o parto, quanto no período de 43 dias a menos de um ano) mas que não são considerados como óbitos maternos pela definição Ministério da Saúde. O local de registro dos óbitos é referente ao município de residência da falecida.")),
-            tags$p(HTML("É considerado que um óbito de gestantes ou puérperas ocorreu por causas externas se a causa básica da morte pertencer ao capítulo “XX. Causas externas de morbidade e mortalidade”, da <code>CID10</code>.")),
-            tags$p(HTML("A coluna “Investigação por CMM” indica se os óbitos foram, ou não, investigados por um Comitê de Morte Materna. É considerado que um óbito foi investigado por um Comitê de Morte Materna se o valor da variável <code>FONTEINV</code>, do <code>SIM</code>, for <code>1</code>."))
+            )
           )
         )
       ),
@@ -89,7 +115,7 @@ mod_obitos_nao_considerados_ui <- function(id) {
       column(
         width = 8,
         bs4Dash::box(
-          title       = "Tabela de Óbitos Não Considerados",
+          title       = "Tabela de óbitos não classificados como morte materna",
           status      = "info",
           solidHeader = TRUE,
           width       = NULL,

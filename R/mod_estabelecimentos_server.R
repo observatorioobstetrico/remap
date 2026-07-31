@@ -26,34 +26,26 @@ mod_estabelecimentos_server <- function(id, data_list) {
     observeEvent(input$help_btn, {
       shiny::showModal(
         shiny::modalDialog(
-          title = tagList(shiny::icon("circle-question"), " Ajuda — Estabelecimentos de Referência"),
+          title = tagList(shiny::icon("circle-question"), " Estabelecimentos de referência"),
           size  = "l",
           easyClose = TRUE,
           footer = shiny::modalButton("Fechar"),
           tags$div(
             style = "font-size: 15px; line-height: 1.55;",
+            tags$p(tags$b("Estabelecimentos de referência")),
             tags$p(
-              tags$b("O que esta tela mostra?"),
-              br(),
-              "Esta tela lista, para cada município pertencente ao nível de análise selecionado, os estabelecimentos de referência definidos para: ",
-              tags$b("Baixo Risco (Maternidade)"), ", ", tags$b("Alto Risco (AGPAR e Maternidade)"), " e ", tags$b("A-SEG (Crianças de Alto Risco)"), "."
-            ),
-            tags$hr(),
-            tags$p(
-              tags$b("Baixo Risco (Maternidade): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Maternidade de Baixo Risco de Referência."
+              "As informações deste painel foram organizadas a partir dos ",
+              tags$b("planos de ação da Rede Alyne"),
+              ", considerando a definição de estabelecimentos de referência para o atendimento de gestantes e recém-nascidos no estado de São Paulo."
             ),
             tags$p(
-              tags$b("Alto Risco (AGPAR e Maternidade): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Ambulatório de Gestação e Puerpério de Alto Risco (AGPAR) e Maternidade de Alto Risco de Referência."
+              "O painel permite identificar onde cada tipo de paciente deve ser atendida, de acordo com suas necessidades de cuidado."
             ),
             tags$p(
-              tags$b("A-SEG (Crianças de Alto Risco): "),
-              "Cobertura de Acesso e Capacidade Instalada na Atenção Primária à Saúde (APS) Para Ambulatório de Acompanhamento de Crianças de Alto Risco Prioritariamente Egressas de Unidade Neonatal (A-SEG)."
+              "Essa organização apoia o encaminhamento adequado das gestantes e recém-nascidos na rede de atenção à saúde."
             ),
-            tags$hr(),
             tags$p(
-              tags$b("Dica:"), " se a tabela estiver grande, use a rolagem interna da tabela para ver todas as linhas ou colunas."
+              tags$b("Para saber a fonte dessa informação, acesse a seção Documentação dos Indicadores, disponível no menu lateral.")
             )
           )
         )
@@ -104,9 +96,9 @@ mod_estabelecimentos_server <- function(id, data_list) {
       stats::setNames(num, labels)
     }
 
-    # Seleciona colunas preservando a ordem do arquivo (names(df))
+    # Seleciona colunas na ordem definida para exibição.
     select_cols_preserve_order <- function(df, desired_set) {
-      keep <- names(df)[names(df) %in% desired_set]
+      keep <- desired_set[desired_set %in% names(df)]
       df[, keep, drop = FALSE]
     }
 
@@ -141,6 +133,40 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
       is.na(x)
     }
+
+    cell_text <- function(x) {
+      if (is.null(x) || length(x) == 0) return("")
+      if (is.list(x)) x <- unlist(x, use.names = FALSE)
+      if (length(x) == 0 || isTRUE(is_blank_value(x[1]))) return("")
+
+      y <- as.character(x[1])
+      y <- gsub("\u00A0", " ", y, fixed = TRUE)
+      y <- gsub("\\s+", " ", y)
+      trimws(y)
+    }
+
+    observeEvent(input$address_click, {
+      payload <- input$address_click %||% list()
+      title <- cell_text(payload$title)
+      address <- cell_text(payload$address)
+
+      if (!nzchar(address)) return(NULL)
+      if (!nzchar(title)) title <- "Estabelecimento"
+
+      shiny::showModal(
+        shiny::modalDialog(
+          title = tagList(shiny::icon("map-marker-alt"), " Endereço do estabelecimento"),
+          size = "m",
+          easyClose = TRUE,
+          footer = shiny::modalButton("Fechar"),
+          tags$div(
+            class = "estab-address-modal",
+            tags$div(class = "estab-address-modal-title", title),
+            tags$div(class = "estab-address-modal-text", address)
+          )
+        )
+      )
+    })
 
     # Remove apenas linhas vazias excedentes dentro de cada grupo.
     # Regra:
@@ -394,7 +420,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
     # 5) Contexto atual (garantindo defaults válidos)
     # ------------------------------------------------------------------
     current_ctx <- reactive({
-      level <- input$nivel_selection %||% "RRAS"
+      level <- input$nivel_selection %||% "DRS"
 
       default_main_rras <- if (length(all_rras) > 0) unname(format_rras_choices(all_rras)[[1]]) else NA_character_
       default_main_reg  <- if (length(all_regiao) > 0) all_regiao[[1]] else NA_character_
@@ -437,14 +463,18 @@ mod_estabelecimentos_server <- function(id, data_list) {
       "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICÍPIO DA RRAS",
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
       "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
-      "MUNICÍPIO DO ESTABELECIMENTO"
+      "MUNICÍPIO DO ESTABELECIMENTO",
+      "CNES",
+      "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO"
     )
 
     cols_posnatal_all <- c(
       "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICÍPIO DA RRAS",
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
       "AMBULATÓRIO DE ACOMPANHAMENTO DE CRIANÇAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)",
-      "MUNICÍPIO DO ESTABELECIMENTO (A-SEG)"
+      "MUNICÍPIO DO ESTABELECIMENTO (A-SEG)",
+      "CNES",
+      "ENDEREÇO DO ESTABELECIMENTO (A-SEG)"
     )
 
     cols_agpar_all <- c(
@@ -452,8 +482,46 @@ mod_estabelecimentos_server <- function(id, data_list) {
       "COORDENADORIA DE SAÚDE", "SUPERVISÃO DE SAÚDE",
       "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
       "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
+      "CNES (AGPAR)",
+      "ENDEREÇO DO ESTABELECIMENTO (AGPAR)",
       "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
-      "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO"
+      "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO",
+      "CNES (MATERNIDADE DE ALTO RISCO)",
+      "ENDEREÇO DO ESTABELECIMENTO DE ALTO RISCO"
+    )
+
+    address_specs <- list(
+      baixo = list(
+        list(
+          est_col = "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
+          address_col = "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO"
+        )
+      ),
+      agpar = list(
+        list(
+          est_col = "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
+          address_col = "ENDEREÇO DO ESTABELECIMENTO (AGPAR)"
+        ),
+        list(
+          est_col = "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
+          address_col = "ENDEREÇO DO ESTABELECIMENTO DE ALTO RISCO"
+        )
+      ),
+      posnatal = list(
+        list(
+          est_col = "AMBULATÓRIO DE ACOMPANHAMENTO DE CRIANÇAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)",
+          address_col = "ENDEREÇO DO ESTABELECIMENTO (A-SEG)"
+        )
+      )
+    )
+
+    address_hidden_cols <- unique(
+      unlist(
+        lapply(address_specs, function(specs) {
+          vapply(specs, `[[`, character(1), "address_col")
+        }),
+        use.names = FALSE
+      )
     )
 
     # ------------------------------------------------------------------
@@ -498,6 +566,11 @@ mod_estabelecimentos_server <- function(id, data_list) {
           desired <- setdiff(desired, c("MUNICÍPIO DA RRAS"))
           if (sp_ctx) desired <- unique(c("SUPERVISÃO DE SAÚDE", desired))
         }
+      }
+
+      # RRAS diferente da 6 nunca deve exibir Supervisão de Saúde
+      if (level == "RRAS" && !is_rras6) {
+        desired <- setdiff(desired, c("SUPERVISÃO DE SAÚDE"))
       }
 
       # REGIÃO DE SAÚDE
@@ -641,7 +714,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "Baixo Risco (Maternidade)",
+                title = "Gestação de Baixo Risco",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -654,7 +727,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "Alto Risco (AGPAR e Maternidade)",
+                title = "Gestação de Alto Risco",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -667,7 +740,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
             column(
               12,
               bs4Dash::box(
-                title = "A-SEG (Crianças de Alto Risco)",
+                title = "Acompanhamento Neonatal de Alto Risco",
                 status = "primary",
                 solidHeader = TRUE,
                 width = 12,
@@ -691,10 +764,10 @@ mod_estabelecimentos_server <- function(id, data_list) {
                 solidHeader = TRUE,
                 width       = 12,
                 type        = "tabs",
-                selected    = "Baixo Risco (Maternidade)",
-                tabPanel("Baixo Risco (Maternidade)", reactable::reactableOutput(ns("table_baixo"))),
-                tabPanel("Alto Risco (AGPAR e Maternidade)", reactable::reactableOutput(ns("table_agpar"))),
-                tabPanel("A-SEG (Crianças de Alto Risco)", reactable::reactableOutput(ns("table_posnatal")))
+                selected    = "Gestação de Baixo Risco",
+                tabPanel("Gestação de Baixo Risco", reactable::reactableOutput(ns("table_baixo"))),
+                tabPanel("Gestação de Alto Risco", reactable::reactableOutput(ns("table_agpar"))),
+                tabPanel("Acompanhamento Neonatal de Alto Risco", reactable::reactableOutput(ns("table_posnatal")))
               )
             )
           )
@@ -713,7 +786,84 @@ mod_estabelecimentos_server <- function(id, data_list) {
       )
     )
 
-    build_reactable_flat <- function(df) {
+    render_establishment_cell <- function(value, address) {
+      establishment <- cell_text(value)
+      address <- cell_text(address)
+
+      if (!nzchar(establishment)) return("")
+
+      if (!nzchar(address)) {
+        return(
+          tags$div(
+            class = "estab-ref-cell",
+            tags$span(class = "estab-ref-name", establishment)
+          )
+        )
+      }
+
+      payload_json <- jsonlite::toJSON(
+        list(title = establishment, address = address),
+        auto_unbox = TRUE,
+        null = "null"
+      )
+      input_id_json <- jsonlite::toJSON(ns("address_click"), auto_unbox = TRUE)
+      click_js <- sprintf(
+        "Shiny.setInputValue(%s, Object.assign(%s, {nonce: Math.random()}), {priority: 'event'}); return false;",
+        input_id_json,
+        payload_json
+      )
+
+      tags$div(
+        class = "estab-ref-cell",
+        tags$span(class = "estab-ref-name", establishment),
+        tags$button(
+          type = "button",
+          class = "estab-address-btn",
+          onclick = click_js,
+          title = "Ver endereço",
+          `aria-label` = paste("Ver endereço de", establishment),
+          shiny::icon("map-marker-alt"),
+          tags$span("Endereço")
+        )
+      )
+    }
+
+    make_establishment_coldef <- function(df, address_col) {
+      force(df)
+      force(address_col)
+
+      reactable::colDef(
+        align = "center",
+        style = list(
+          whiteSpace = "normal",
+          verticalAlign = "top"
+        ),
+        cell = function(value, index, name) {
+          render_establishment_cell(value, df[[address_col]][index])
+        }
+      )
+    }
+
+    column_defs_for_table <- function(df, table_type = NULL) {
+      col_defs <- list()
+
+      for (address_col in intersect(address_hidden_cols, names(df))) {
+        col_defs[[address_col]] <- reactable::colDef(show = FALSE)
+      }
+
+      specs <- address_specs[[table_type]] %||% list()
+      for (spec in specs) {
+        est_col <- spec$est_col
+        address_col <- spec$address_col
+        if (est_col %in% names(df) && address_col %in% names(df)) {
+          col_defs[[est_col]] <- make_establishment_coldef(df, address_col)
+        }
+      }
+
+      col_defs
+    }
+
+    build_reactable_flat <- function(df, table_type = NULL) {
       reactable::reactable(
         df,
         compact       = TRUE,
@@ -722,6 +872,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
         striped       = TRUE,
         wrap          = TRUE,
         pagination    = FALSE,
+        columns       = column_defs_for_table(df, table_type),
         defaultColDef = base_coldef
       )
     }
@@ -745,14 +896,14 @@ mod_estabelecimentos_server <- function(id, data_list) {
       )
     }
 
-    build_reactable_expandable <- function(df, group_col) {
+    build_reactable_expandable <- function(df, group_col, table_type = NULL) {
 
       if (is.null(group_col) || !group_col %in% names(df)) {
-        return(build_reactable_flat(df))
+        return(build_reactable_flat(df, table_type = table_type))
       }
 
       if (nrow(df) == 0) {
-        return(build_reactable_flat(df))
+        return(build_reactable_flat(df, table_type = table_type))
       }
 
       df <- order_display_df(df, group_col = group_col)
@@ -789,8 +940,9 @@ mod_estabelecimentos_server <- function(id, data_list) {
           sub[[group_col]] <- NULL
           sub$.grp_key <- NULL
           sub <- order_display_df(sub)
+          visible_cols <- setdiff(names(sub), address_hidden_cols)
 
-          if (ncol(sub) == 0) {
+          if (length(visible_cols) == 0) {
             return(tags$div(style = "padding: 8px;", "Sem detalhes adicionais."))
           }
 
@@ -804,6 +956,7 @@ mod_estabelecimentos_server <- function(id, data_list) {
               striped     = TRUE,
               wrap        = TRUE,
               pagination  = FALSE,
+              columns     = column_defs_for_table(sub, table_type),
               defaultColDef = base_coldef
             )
           )
@@ -834,8 +987,154 @@ mod_estabelecimentos_server <- function(id, data_list) {
 
       validate(need(nrow(df) > 0, "Nenhum registro encontrado para os filtros selecionados."))
 
-      build_reactable_expandable(df, group_col)
+      build_reactable_expandable(df, group_col, table_type = table_type)
     }
+
+    export_col_config <- function(table_type, group_col) {
+      group_col <- group_col %||% "MUNICÍPIO"
+
+      switch(
+        table_type,
+        "baixo" = list(
+          cols = c(
+            group_col,
+            "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
+            "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO",
+            "MUNICÍPIO DO ESTABELECIMENTO",
+            "CNES"
+          ),
+          names = c(
+            group_col,
+            "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
+            "ENDEREÇO",
+            "MUNICÍPIO DO ESTABELECIMENTO",
+            "CNES"
+          )
+        ),
+        "agpar" = list(
+          cols = c(
+            group_col,
+            "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
+            "ENDEREÇO DO ESTABELECIMENTO (AGPAR)",
+            "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
+            "CNES (AGPAR)",
+            "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
+            "ENDEREÇO DO ESTABELECIMENTO DE ALTO RISCO",
+            "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO",
+            "CNES (MATERNIDADE DE ALTO RISCO)"
+          ),
+          names = c(
+            group_col,
+            "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
+            "ENDEREÇO (AGPAR)",
+            "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
+            "CNES (AGPAR)",
+            "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
+            "ENDEREÇO (MATERNIDADE DE ALTO RISCO)",
+            "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO",
+            "CNES (MATERNIDADE DE ALTO RISCO)"
+          )
+        ),
+        "posnatal" = list(
+          cols = c(
+            group_col,
+            "AMBULATÓRIO DE ACOMPANHAMENTO DE CRIANÇAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)",
+            "ENDEREÇO DO ESTABELECIMENTO (A-SEG)",
+            "MUNICÍPIO DO ESTABELECIMENTO (A-SEG)",
+            "CNES"
+          ),
+          names = c(
+            group_col,
+            "AMBULATÓRIO DE ACOMPANHAMENTO DE CRIANÇAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)",
+            "ENDEREÇO",
+            "MUNICÍPIO DO ESTABELECIMENTO (A-SEG)",
+            "CNES"
+          )
+        )
+      )
+    }
+
+    build_export_table <- function(df_raw, table_type, ctx) {
+      df <- filter_df_by_ctx(df_raw, ctx)
+
+      desired <- compute_desired_cols(table_type, ctx)
+      df <- select_cols_preserve_order(df, desired)
+      df <- rename_for_display(df)
+
+      group_col <- determine_group_col(df, ctx)
+      df <- prune_blank_rows_within_group(df, group_col = group_col)
+      df <- order_display_df(df, group_col = group_col)
+
+      cfg <- export_col_config(table_type, group_col)
+      for (col in cfg$cols) {
+        if (!col %in% names(df)) {
+          df[[col]] <- ""
+        }
+      }
+
+      out <- df[, cfg$cols, drop = FALSE]
+      names(out) <- cfg$names
+      out[] <- lapply(out, function(col) {
+        vapply(seq_along(col), function(i) cell_text(col[[i]]), character(1))
+      })
+
+      out
+    }
+
+    export_tables <- reactive({
+      ctx <- current_ctx()
+      list(
+        "Gestação de Baixo Risco" = build_export_table(tabela_baixo, "baixo", ctx),
+        "Gestação de Alto Risco" = build_export_table(tabela_agpar, "agpar", ctx),
+        "Acomp Neonatal Alto Risco" = build_export_table(tabela_posnatal, "posnatal", ctx)
+      )
+    })
+
+    download_slug <- reactive({
+      ctx <- current_ctx()
+      value <- switch(
+        ctx$level,
+        "RRAS" = paste0("rras_", ctx$main_value),
+        "REGIÃO DE SAÚDE" = paste0("regiao_", ctx$main_value),
+        "DRS" = paste0("drs_", ctx$third_value),
+        "MUNICIPAL" = paste0("municipal_", ctx$third_value),
+        "estabelecimentos"
+      )
+      slug <- normalize_str(value)
+      slug <- tolower(gsub("[^A-Z0-9]+", "_", slug))
+      slug <- gsub("^_+|_+$", "", slug)
+      if (!nzchar(slug)) "estabelecimentos" else slug
+    })
+
+    output$download_estab_xlsx <- downloadHandler(
+      filename = function() {
+        paste0("estabelecimentos_referencia_", download_slug(), ".xlsx")
+      },
+      contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      content = function(file) {
+        wb <- openxlsx::createWorkbook()
+        header_style <- openxlsx::createStyle(
+          textDecoration = "bold",
+          fgFill = "#EAF0F7",
+          border = "bottom"
+        )
+
+        tables <- export_tables()
+        for (sheet_name in names(tables)) {
+          df <- tables[[sheet_name]]
+          openxlsx::addWorksheet(wb, sheet_name)
+          openxlsx::writeData(wb, sheet_name, df, headerStyle = header_style)
+          openxlsx::freezePane(wb, sheet_name, firstRow = TRUE)
+          if (ncol(df) > 0) {
+            openxlsx::setColWidths(wb, sheet_name, cols = seq_len(ncol(df)), widths = "auto")
+          }
+        }
+
+        openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+      }
+    )
+
+    outputOptions(output, "download_estab_xlsx", suspendWhenHidden = FALSE)
 
     output$table_baixo <- reactable::renderReactable({
       ctx <- current_ctx()

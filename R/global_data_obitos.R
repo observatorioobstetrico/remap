@@ -28,18 +28,44 @@ load_obitos_data <- function(path_data = app_sys("app", "data"), rebuild = FALSE
         drs             = drs
       )
 
-    read_and_expand <- function(file_name) {
+    read_and_expand <- function(file_name, keep_municipio_residencia = FALSE) {
       df_raw <- cached_csv(
         file.path(path_data, file_name),
         delim = ",",
         rebuild = rebuild
       ) %>% janitor::clean_names()
-      if ("municipio" %in% names(df_raw)) df_raw <- dplyr::select(df_raw, -municipio)
-      dplyr::left_join(rras_full, df_raw, by = c("cod_ibge" = "codigo"))
+      if (keep_municipio_residencia && "municipio" %in% names(df_raw)) {
+        df_raw <- df_raw %>%
+          dplyr::mutate(municipio_residencia = trimws(as.character(municipio))) %>%
+          dplyr::select(-municipio)
+      } else if ("municipio" %in% names(df_raw)) {
+        df_raw <- dplyr::select(df_raw, -municipio)
+      }
+
+      df_joined <- dplyr::left_join(rras_full, df_raw, by = c("cod_ibge" = "codigo"))
+
+      if ("municipio_residencia" %in% names(df_joined)) {
+        df_joined <- df_joined %>%
+          dplyr::mutate(
+            municipio_residencia = dplyr::if_else(
+              is.na(municipio_residencia) | municipio_residencia == "",
+              municipio_sp,
+              municipio_residencia
+            )
+          )
+      }
+
+      df_joined
     }
 
-    df_oficiais <- read_and_expand("dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2025.csv")
-    df_nao_cons <- read_and_expand("dados_oobr_obitos_grav_puerp_desconsiderados_1996_2025.csv")
+    df_oficiais <- read_and_expand(
+      "dados_oobr_obitos_grav_puerp_maternos_oficiais_1996_2025.csv",
+      keep_municipio_residencia = TRUE
+    )
+    df_nao_cons <- read_and_expand(
+      "dados_oobr_obitos_grav_puerp_desconsiderados_1996_2025.csv",
+      keep_municipio_residencia = TRUE
+    )
     df_ext      <- read_and_expand("dados_oobr_obitos_grav_puerp_analise_cruzada_1996_2025.csv")
 
     list(

@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-05-14T09:51:05Z",
+  "available_years": [2020, 2021, 2022, 2023, 2024, 2025],
+  "consolidated_years": [2020, 2021, 2022, 2023, 2024],
+  "preliminary_year": 2025,
+  "output_rda": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/cobertura_ans_aps.rda",
+  "output_xlsx": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/cobertura_ans_aps.xlsx",
+  "validation": [
+    {
+      "ano": 2020,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    },
+    {
+      "ano": 2021,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    },
+    {
+      "ano": 2022,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    },
+    {
+      "ano": 2023,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    },
+    {
+      "ano": 2024,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    },
+    {
+      "ano": 2025,
+      "municipios": 645,
+      "max_diferenca_abs": 0,
+      "media_diferenca_abs": 0,
+      "divergencias_maiores_0_05": 0
+    }
+  ]
+}

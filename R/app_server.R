@@ -22,17 +22,22 @@ app_server <- function(input, output, session) {
   data_list_series   <- load_series_data()       # Dados de séries de óbitos (.rda)
   data_list_ind      <- load_indicadores_data()  # Dados indicadores obstétricos
   data_list_ref      <- load_referencias_data()  # Dados de estabelecimentos de referência
+  data_list_prenatal_acesso <- load_indicadores_prenatal_data()
 
   # 2. Inicia módulos principais
 
   # Home
   mod_home_server("home")
 
-  # Estatísticas RRAS – APS
+  # Cobertura Assistencial
   mod_rras_aps_server("rras_aps", data_list = data_list_aps)
 
   # Óbitos de Gestantes e Puérperas – Séries de mortalidade e morbidade
-  mod_series_obitos_server("series_obitos", data_list = data_list_series)
+  mod_series_obitos_server(
+    "series_obitos",
+    data_list = data_list_series,
+    data_list_obitos = data_list_obitos
+  )
 
   # Óbitos de Gestantes e Puérperas – Outros submenus
   mod_obitos_oficiais_server("oficiais", data_list = data_list_obitos)
@@ -47,6 +52,7 @@ app_server <- function(input, output, session) {
   mod_prenatal_server("cpn", data_list = data_list_ind)
   mod_robson_server("robson", data_list = data_list_ind)
   mod_robson_cesareas_server("rc", data_list = data_list_ind)
+  mod_indicadores_prenatal_acesso_server("prenatal_acesso", data_list = data_list_prenatal_acesso)
 
   # Estabelecimentos de Referência
   mod_estabelecimentos_server("estabelecimentos", data_list = data_list_ref)

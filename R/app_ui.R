@@ -18,6 +18,9 @@
 #' @noRd
 #' @export
 app_ui <- function(request) {
+  # Altere para TRUE para exibir novamente o menu "Indicadores Assistenciais 2".
+  mostrar_indicadores_assistenciais_2 <- FALSE
+
   tagList(
     # 1. Recursos externos (CSS, JS, favicon, bundle)
     golem_add_external_resources(),
@@ -45,7 +48,7 @@ app_ui <- function(request) {
       sidebar = bs4Dash::bs4DashSidebar(
         skin      = "light",
         collapsed = TRUE,
-        width     = "370px",
+        width     = "400px",
         # Não definir 'title' aqui evita brand duplicada na sidebar
         bs4Dash::bs4SidebarMenu(
           id = "menu",
@@ -57,11 +60,11 @@ app_ui <- function(request) {
 
           # Estatísticas RRAS
           bs4Dash::bs4SidebarMenuItem(
-            "Estatísticas RRAS",
+            "Rede de Atenção Materna e Perinatal",
             icon = icon("chart-bar"),
 
             bs4Dash::bs4SidebarMenuSubItem(
-              "Atenção Primária à Saúde",
+              "Cobertura Assistencial",
               tabName = "tabela_1_APS"
             ),
 
@@ -75,15 +78,15 @@ app_ui <- function(request) {
           bs4Dash::bs4SidebarMenuItem(
             "Óbitos de Gestantes e Puérperas",
             icon = icon("heartbeat"),
-            bs4Dash::bs4SidebarMenuSubItem("Séries de Mortalidade e Morbidade", tabName = "series_obitos"),
-            bs4Dash::bs4SidebarMenuSubItem("Oficiais",                          tabName = "obitos_oficiais"),
-            bs4Dash::bs4SidebarMenuSubItem("Não considerados",                  tabName = "obitos_nao_considerados"),
+            bs4Dash::bs4SidebarMenuSubItem("Séries de Mortalidade", tabName = "series_obitos"),
+            bs4Dash::bs4SidebarMenuSubItem("Óbitos classificados como morte materna",     tabName = "obitos_oficiais"),
+            bs4Dash::bs4SidebarMenuSubItem("Óbitos não classificados como morte materna", tabName = "obitos_nao_considerados"),
             bs4Dash::bs4SidebarMenuSubItem("Análise cruzada",                   tabName = "analise_cruzada")
           ),
 
           # Indicadores Obstétricos
           bs4Dash::bs4SidebarMenuItem(
-            "Indicadores Obstétricos",
+            "Indicadores Assistenciais",
             icon = icon("chart-area"),
             bs4Dash::bs4SidebarMenuSubItem("Nascimentos",         tabName = "nascimentos"),
             bs4Dash::bs4SidebarMenuSubItem("Partos Prematuros",   tabName = "prematuros"),
@@ -92,6 +95,20 @@ app_ui <- function(request) {
             bs4Dash::bs4SidebarMenuSubItem("Consultas Pré-natal", tabName = "prenatal"),
             bs4Dash::bs4SidebarMenuSubItem("Robson",              tabName = "robson"),
             bs4Dash::bs4SidebarMenuSubItem("Robson & Cesáreas",   tabName = "robson_cesarea")
+          ),
+
+          if (isTRUE(mostrar_indicadores_assistenciais_2)) {
+            bs4Dash::bs4SidebarMenuItem(
+              "Indicadores Assistenciais 2",
+              icon = icon("chart-line"),
+              bs4Dash::bs4SidebarMenuSubItem("Acesso e Qualidade do Pré-Natal", tabName = "indicadores_prenatal_acesso")
+            )
+          },
+
+          bs4Dash::bs4SidebarMenuItem(
+            "Documentação dos indicadores",
+            tabName = "documentacao_indicadores",
+            icon = icon("file-pdf")
           )
         )
       ),
@@ -105,7 +122,8 @@ app_ui <- function(request) {
             mod_home_ui("home")
           ),
 
-          # Aba APS
+          # Aba Cobertura Assistencial: implementação atual, com séries anuais e
+          # indicadores provenientes das bases consolidadas deste projeto.
           bs4Dash::bs4TabItem(tabName = "tabela_1_APS", mod_rras_aps_ui("rras_aps")),
 
           # Placeholder AGAR
@@ -136,9 +154,38 @@ app_ui <- function(request) {
           bs4Dash::bs4TabItem(tabName = "prenatal",               mod_prenatal_ui("cpn")),
           bs4Dash::bs4TabItem(tabName = "robson",                 mod_robson_ui("robson")),
           bs4Dash::bs4TabItem(tabName = "robson_cesarea",         mod_robson_cesareas_ui("rc")),
+          bs4Dash::bs4TabItem(tabName = "indicadores_prenatal_acesso", mod_indicadores_prenatal_acesso_ui("prenatal_acesso")),
 
           # NOVA ABA: Estabelecimentos de Referência
-          bs4Dash::bs4TabItem(tabName = "estabelecimentos", mod_estabelecimentos_ui("estabelecimentos"))
+          bs4Dash::bs4TabItem(tabName = "estabelecimentos", mod_estabelecimentos_ui("estabelecimentos")),
+
+          bs4Dash::bs4TabItem(
+            tabName = "documentacao_indicadores",
+            fluidRow(
+              column(
+                12,
+                tags$div(class = "panel-title-custom", "Documentação dos indicadores")
+              )
+            ),
+            fluidRow(
+              column(
+                12,
+                tags$div(
+                  class = "card",
+                  style = "padding: 0; overflow: hidden;",
+                  tags$div(
+                    class = "card-body",
+                    style = "padding: 0;",
+                    tags$iframe(
+                      src = "www/documentacao.pdf",
+                      title = "Documentação dos indicadores",
+                      style = "display: block; width: 100%; height: calc(100vh - 190px); min-height: 720px; border: none;"
+                    )
+                  )
+                )
+              )
+            )
+          )
         )
       )
     )

@@ -236,7 +236,7 @@ mod_robson_cesareas_server <- function(id, data_list) {
             )
           )
         ) +
-          ggplot2::geom_col(fill = "#37399a", color = "black") +
+          ggplot2::geom_col(fill = "#0a1e3c", color = "black") +
           ggplot2::labs(x = "Grupo de Robson", y = "% de cesáreas") +
           ggplot2::theme_linedraw()
 
@@ -263,7 +263,7 @@ mod_robson_cesareas_server <- function(id, data_list) {
                           "% cesáreas: ", formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."), "%")
           )
         ) +
-          ggplot2::geom_col(fill = "#37399a", color = "black") +
+          ggplot2::geom_col(fill = "#0a1e3c", color = "black") +
           ggplot2::labs(x = "Ano", y = "% de cesáreas") +
           ggplot2::theme_linedraw()
       }

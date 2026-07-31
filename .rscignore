@@ -1,28 +1,30 @@
+.agents
+.Rbuildignore
+.Rproj.user
 .here
 CODE_OF_CONDUCT.md
-LICENSE
 LICENCE
-LICENSE.md
 LICENCE.md
+LICENSE.md
+Meta
 NEWS
 NEWS.md
-README.md
-README.Rmd
+Orientações para configuração do ambiente de trabalho do app.pdf
 README.HTML
+README.Rmd
+README.md
+data-raw
 dev
+doc
 man
-vignettes
+painel-obitos-grav-puerp-main
+painel-remap-antigo
+painel_referencia
+painel_referência_paineldevigilancia
+shiny_app_stderr.log
+shiny_app_stdout.log
+shiny_prenatal_stderr.log
+shiny_prenatal_stdout.log
 tests
-
-# --- ignore: dados crus em inst/app/data e subpastas ---
-^inst/app/data/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
-^inst/app/data/.*/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
-
-# se vocÃª tiver dados crus tambÃ©m em data_obitos (dentro de inst/app/data), ignore-os:
-^inst/app/data/data_obitos/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
-^inst/app/data/data_obitos/.*/.*\.(csv|CSV|csv\.gz|CSV\.GZ|xlsx|XLSX|xls|XLS)$
-
-# --- allow (opcional): caches .rda e assets necessÃ¡rios ---
-!^inst/app/data/_rda/
-!^inst/app/data/_rda/.*\.rda$
-!^inst/app/www/
+utils.txt
+vignettes

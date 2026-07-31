@@ -11,11 +11,27 @@
 #' @importFrom shinyWidgets actionBttn
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom highcharter highchartOutput
+#' @importFrom reactable reactableOutput
 #' @importFrom shinyjs useShinyjs hidden
 #' @noRd
 #' @export
 mod_series_obitos_ui <- function(id) {
   ns <- shiny::NS(id)
+  opcoes_selectize_causas_indiretas <- list(
+    placeholder = "Selecione",
+    render = htmlwidgets::JS(
+      "{
+        item: function(item, escape) {
+          var label = item.label || item.text || item.value || '';
+          return '<div class=\"series-obitos-select-item\" title=\"' + escape(label) + '\">' + escape(label) + '</div>';
+        },
+        option: function(item, escape) {
+          var label = item.label || item.text || item.value || '';
+          return '<div class=\"series-obitos-select-option\" title=\"' + escape(label) + '\">' + escape(label) + '</div>';
+        }
+      }"
+    )
+  )
 
   tagList(
     #-----------------------------------------------------------------------
@@ -54,11 +70,236 @@ mod_series_obitos_ui <- function(id) {
           display: none !important;
         }
 
+        .series-obitos-tabela .rt-thead {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+          background: #ffffff;
+        }
+
+        .series-obitos-tabela .rt-th {
+          font-weight: 700 !important;
+          font-size: 14px !important;
+        }
+
+        .series-obitos-tabela .rt-tfoot .rt-td,
+        .series-obitos-tabela .rt-tr.-footer .rt-td {
+          font-weight: 700 !important;
+          background: #f8fafc;
+        }
+
+        .series-obitos-tabela-nota {
+          background: #f7fbff;
+          border-left: 4px solid #32a0ff;
+          border-radius: 6px;
+          color: #24364f;
+          font-size: 14px;
+          margin: 4px 0 14px 0;
+          padding: 10px 12px;
+        }
+
+        .series-obitos-tabela-header-title {
+          display: block;
+          min-height: 34px;
+          line-height: 34px;
+          padding-right: 130px;
+        }
+
+        .series-obitos-tabela-header-actions {
+          align-items: center;
+          display: flex;
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .series-obitos-tabela-download.btn {
+          background-color: #ffffff !important;
+          border-color: #ffffff !important;
+          color: #0062cc !important;
+          font-weight: 700;
+          margin: 0;
+          padding: 4px 12px;
+        }
+
+        .series-obitos-tabela-download.btn i,
+        .series-obitos-tabela-download.btn svg {
+          color: #0062cc !important;
+          fill: #0062cc !important;
+        }
+
+        .series-obitos-tabela-download.btn:hover,
+        .series-obitos-tabela-download.btn:focus {
+          background-color: #eaf0f7 !important;
+          border-color: #eaf0f7 !important;
+          color: #084594 !important;
+        }
+
+        .series-obitos-tabela-download.btn:hover i,
+        .series-obitos-tabela-download.btn:focus i,
+        .series-obitos-tabela-download.btn:hover svg,
+        .series-obitos-tabela-download.btn:focus svg {
+          color: #084594 !important;
+          fill: #084594 !important;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-input {
+          align-items: center;
+          background: #ffffff !important;
+          color: #24364f !important;
+          display: flex !important;
+          min-height: 38px;
+          overflow: hidden;
+          padding-right: 32px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-input.focus,
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-input.dropdown-active {
+          background: #ffffff !important;
+          color: #24364f !important;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-input > .item {
+          color: #24364f !important;
+          display: block;
+          flex: 1 1 auto;
+          max-width: min(52ch, calc(100% - 8px));
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-dropdown {
+          box-sizing: border-box;
+          left: auto !important;
+          max-width: min(760px, calc(100vw - 32px));
+          min-width: min(360px, 100%) !important;
+          right: 0 !important;
+          width: min(760px, calc(100vw - 32px)) !important;
+          z-index: 3000;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-dropdown .option {
+          color: #24364f !important;
+          line-height: 1.25;
+          overflow-wrap: anywhere;
+          padding: 8px 10px;
+          white-space: normal;
+          word-break: normal;
+        }
+
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-dropdown .option.active,
+        select[id$='tabela_causa_indireta'] + .selectize-control.single .selectize-dropdown .option.selected {
+          background: #eef6ff !important;
+          color: #084594 !important;
+        }
+
+        .series-obitos-chart-centered {
+          margin: 0 auto 14px auto;
+          max-width: 980px;
+        }
+
+        .series-obitos-chart-centered .card-title {
+          line-height: 1.25;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-input {
+          align-items: center;
+          background: #ffffff !important;
+          color: #24364f !important;
+          display: flex !important;
+          min-height: 38px;
+          overflow: hidden;
+          padding-right: 32px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-input.focus,
+        .series-obitos-causa-select .selectize-control.single .selectize-input.dropdown-active {
+          background: #ffffff !important;
+          color: #24364f !important;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-input > .item {
+          color: #24364f !important;
+          display: block;
+          flex: 1 1 auto;
+          max-width: min(52ch, calc(100% - 8px));
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-input.has-items input {
+          flex: 0 0 4px !important;
+          min-width: 4px !important;
+          width: 4px !important;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown {
+          box-sizing: border-box;
+          left: auto !important;
+          max-width: min(760px, calc(100vw - 32px));
+          min-width: min(360px, 100%) !important;
+          right: 0 !important;
+          width: min(760px, calc(100vw - 32px)) !important;
+          z-index: 3000;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown-content {
+          max-height: 280px;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown .option,
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown .series-obitos-select-option {
+          color: #24364f !important;
+          line-height: 1.25;
+          overflow-wrap: break-word;
+          padding: 8px 10px;
+          white-space: normal;
+          word-break: normal;
+        }
+
+        .series-obitos-causa-select .series-obitos-select-item {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown .option.active,
+        .series-obitos-causa-select .selectize-control.single .selectize-dropdown .option.selected {
+          background: #eef6ff !important;
+          color: #084594 !important;
+        }
+
       "))
     ),
 
     # Inclui shinyjs para usar show()/hide()
     shinyjs::useShinyjs(),
+
+    fluidRow(
+      column(
+        width = 12,
+        tags$div(
+          class = "panel-title-custom panel-title-with-help",
+          tags$span("Séries de Mortalidade"),
+          shiny::actionButton(
+            inputId = ns("help_btn"),
+            label = NULL,
+            icon = shiny::icon("circle-question"),
+            class = "btn-help-toggle",
+            `aria-label` = "Sobre Séries de Mortalidade"
+          )
+        )
+      )
+    ),
 
     #=======================================================================
     # 1. CARD DE FILTROS
@@ -87,9 +328,9 @@ mod_series_obitos_ui <- function(id) {
               selectizeInput(
                 ns("nivel"), "Nível de análise:",
                 choices = c(
-                  "Estadual"             = "estadual",
-                  "RRAS"                 = "rras",
+                  "Estado de SP"         = "estadual",
                   "DRS"                  = "drs",
+                  "RRAS"                 = "rras",
                   "Região de Saúde"      = "regiao_saude",
                   "Municipal"            = "municipal"
                 ),
@@ -124,7 +365,7 @@ mod_series_obitos_ui <- function(id) {
             column(
               width = 3,
               selectizeInput(
-                ns("comparar"), "Comparar com outra localidade?",
+                ns("comparar"), "Comparar com outra localidade do estado de SP?",
                 choices = c("Não", "Sim"), selected = "Não", width = "100%"
               )
             ),
@@ -135,12 +376,10 @@ mod_series_obitos_ui <- function(id) {
                 selectizeInput(
                   ns("nivel2"), "Nível de análise (comparar):",
                   choices = c(
-                    "Nacional"             = "nacional",
-                    "Região do país"       = "regional",
-                    "Estadual"             = "estadual",
-                    "Macrorregião"         = "macro",
+                    "Estado de SP"         = "estadual",
                     "DRS"                  = "drs",
-                    "Região de saúde"      = "micro",
+                    "RRAS"                 = "rras",
+                    "Região de saúde"      = "regiao_saude",
                     "Municipal"            = "municipal"
                   ),
                   options = list(placeholder = "Selecione"), width = "100%"
@@ -148,6 +387,39 @@ mod_series_obitos_ui <- function(id) {
               )
             ),
             column(width = 6, uiOutput(ns("ui_subfiltros_comp")))
+          ),
+
+          conditionalPanel(
+            condition = "input.comparar == 'Sim'", ns = ns,
+            tagList(
+              fluidRow(
+                column(
+                  width = 3,
+                  selectizeInput(
+                    ns("comparar2"), "Comparar com outra localidade do estado de SP?",
+                    choices = c("Não", "Sim"), selected = "Não", width = "100%"
+                  )
+                ),
+                column(
+                  width = 3,
+                  conditionalPanel(
+                    condition = "input.comparar2 == 'Sim'", ns = ns,
+                    selectizeInput(
+                      ns("nivel3"), "Nível de análise (comparar):",
+                      choices = c(
+                        "Estado de SP"         = "estadual",
+                        "DRS"                  = "drs",
+                        "RRAS"                 = "rras",
+                        "Região de saúde"      = "regiao_saude",
+                        "Municipal"            = "municipal"
+                      ),
+                      options = list(placeholder = "Selecione"), width = "100%"
+                    )
+                  )
+                ),
+                column(width = 6, uiOutput(ns("ui_subfiltros_comp2")))
+              )
+            )
           ),
 
           conditionalPanel(
@@ -183,7 +455,7 @@ mod_series_obitos_ui <- function(id) {
     ),
 
     #=======================================================================
-    # 2. QUATRO GRÁFICOS EM CARDS
+    # 2. GRÁFICOS EM CARDS
     #=======================================================================
 
     # Linha 1: número de óbitos e razão por 100k
@@ -284,7 +556,7 @@ mod_series_obitos_ui <- function(id) {
         )
       ),
 
-      # % causas específicas
+      # % causas específicas entre causas diretas
       column(
         width = 6,
         bs4Dash::bs4Card(
@@ -293,7 +565,7 @@ mod_series_obitos_ui <- function(id) {
           solidHeader  = TRUE,
           headerBorder = FALSE,
           title = tagList(
-            HTML("<b>% óbitos maternos diretos por causas específicas</b>"),
+            HTML("<b>% óbitos por causas específicas dentre os óbitos por causas obstétricas diretas</b>"),
             tags$span(
               id = ns("mostrar_botao4"), class = "my-header-icon",
               style = "position:absolute; top:50%; right:15px; transform:translateY(-50%);
@@ -327,6 +599,128 @@ mod_series_obitos_ui <- function(id) {
           ),
           shinycssloaders::withSpinner(
             highcharter::highchartOutput(ns("plot_pct_especificas"), height = "311px")
+          )
+        )
+      )
+    ),
+
+    # Linha 3: % causas indiretas e % causas específicas entre causas indiretas
+    fluidRow(
+      column(
+        width = 6,
+        bs4Dash::bs4Card(
+          width        = 12,
+          status       = "primary",
+          solidHeader  = TRUE,
+          headerBorder = FALSE,
+          title = HTML("<b>% óbitos por causas obstétricas indiretas</b>"),
+          shinycssloaders::withSpinner(
+            highcharter::highchartOutput(ns("plot_pct_indiretas"), height = "400px")
+          )
+        )
+      ),
+
+      column(
+        width = 6,
+        bs4Dash::bs4Card(
+          width        = 12,
+          status       = "primary",
+          solidHeader  = TRUE,
+          headerBorder = FALSE,
+          title = HTML("<b>% óbitos por causas específicas dentre os óbitos por causas obstétricas indiretas</b>"),
+          fluidRow(
+            column(
+              width = 12,
+              tags$div(
+                class = "series-obitos-causa-select",
+                selectizeInput(
+                  ns("causa_indireta_especifica"),
+                  "Causa de óbito materno indireto:",
+                  choices = character(0),
+                  options = opcoes_selectize_causas_indiretas,
+                  width = "100%"
+                )
+              )
+            )
+          ),
+          shinycssloaders::withSpinner(
+            highcharter::highchartOutput(ns("plot_pct_indiretas_especificas"), height = "311px")
+          )
+        )
+      )
+    ),
+
+    #=======================================================================
+    # 3. TABELA DETALHADA
+    #=======================================================================
+    fluidRow(
+      column(
+        width = 12,
+        bs4Dash::bs4Card(
+          width        = 12,
+          status       = "primary",
+          solidHeader  = TRUE,
+          headerBorder = FALSE,
+          title        = div(
+            class = "series-obitos-tabela-header-title",
+            tags$span(HTML("<b>Visão detalhada dos indicadores</b>")),
+            tags$span(
+              class = "series-obitos-tabela-header-actions",
+              downloadButton(
+                ns("download_tabela_mortalidade_xlsx"),
+                "Baixar",
+                class = "series-obitos-tabela-download",
+                icon = icon("download")
+              )
+            )
+          ),
+
+          fluidRow(
+            column(
+              width = 3,
+              uiOutput(ns("ui_tabela_ano"))
+            ),
+            column(
+              width = 3,
+              selectizeInput(
+                ns("tabela_indicador"),
+                "Indicador:",
+                choices = c(
+                  "Número de óbitos maternos" = "n_obitos",
+                  "Razão de mortalidade por 100.000 nascidos vivos" = "rmm",
+                  "% óbitos por causas obstétricas" = "prop_obstetricas",
+                  "% óbitos por causa específica" = "causas_especificas"
+                ),
+                selected = "n_obitos",
+                width = "100%"
+              )
+            ),
+            column(
+              width = 3,
+              conditionalPanel(
+                condition = "input.tabela_indicador == 'prop_obstetricas' || input.tabela_indicador == 'causas_especificas'", ns = ns,
+                selectizeInput(
+                  ns("tabela_tipo_causa"),
+                  "Tipo de causa:",
+                  choices = c(
+                    "Óbitos maternos diretos" = "diretas",
+                    "Óbitos maternos indiretos" = "indiretas"
+                  ),
+                  selected = "diretas",
+                  width = "100%"
+                )
+              )
+            ),
+            column(width = 3, uiOutput(ns("ui_tabela_causa")))
+          ),
+
+          uiOutput(ns("tabela_contexto_causa")),
+
+          div(
+            class = "series-obitos-tabela",
+            shinycssloaders::withSpinner(
+              reactable::reactableOutput(ns("tabela_mortalidade_detalhada"), height = "650px")
+            )
           )
         )
       )

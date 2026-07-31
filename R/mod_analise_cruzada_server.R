@@ -13,6 +13,33 @@ mod_analise_cruzada_server <- function(id, data_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    observeEvent(input$help_btn, {
+      shiny::showModal(
+        shiny::modalDialog(
+          title = tagList(shiny::icon("circle-question"), " Análise Cruzada"),
+          size = "l",
+          easyClose = TRUE,
+          footer = shiny::modalButton("Fechar"),
+          tags$div(
+            style = "font-size: 15px; line-height: 1.55;",
+            tags$p(
+              "Este painel permite cruzar diferentes informações sobre os óbitos maternos, combinando variáveis ",
+              "como ano do óbito, raça/cor, escolaridade, local de ocorrência, período do óbito, tipo de causa ",
+              "obstétrica e investigação por Comitê de Mortalidade Materna."
+            ),
+            tags$p(
+              "A ferramenta ajuda a identificar diferenças no perfil dos óbitos e possíveis desigualdades entre ",
+              "grupos, territórios e períodos."
+            ),
+            tags$p(
+              "Também permite visualizar os resultados em gráfico e tabela, com percentuais calculados por coluna, ",
+              "por linha ou por célula, conforme o objetivo da análise."
+            )
+          )
+        )
+      )
+    })
+
     # 1) Ajusta slider de anos
     # 1) Ajusta slider de anos (robusto a NA/vazio)
     observe({
@@ -302,7 +329,12 @@ mod_analise_cruzada_server <- function(id, data_list) {
       df <- dados_ac()
       validate(need(nrow(df) > 0, "Não existem registros para estes filtros."))
       n_cats <- length(unique(df$variavel_coluna))
-      pal    <- colorRampPalette(c("#bdd5ea", "#0A1E3C"))(n_cats)
+      blues_steps <- c("#9ECAE1", "#6BAED6", "#4292C6", "#2171B5", "#084594")
+      pal <- if (n_cats <= length(blues_steps)) {
+        blues_steps[round(seq(1, length(blues_steps), length.out = n_cats))]
+      } else {
+        grDevices::colorRampPalette(blues_steps, space = "Lab")(n_cats)
+      }
       highcharter::hchart(
         df, type = "column",
         highcharter::hcaes(
@@ -312,6 +344,7 @@ mod_analise_cruzada_server <- function(id, data_list) {
         )
       ) %>%
         highcharter::hc_colors(pal) %>%
+        highcharter::hc_plotOptions(column = list(borderColor = "#FFFFFF", borderWidth = 1)) %>%
         highcharter::hc_tooltip(valueSuffix = " óbitos") %>%
         highcharter::hc_xAxis(title = list(text = "")) %>%
         highcharter::hc_yAxis(title = list(text = "Óbitos"))

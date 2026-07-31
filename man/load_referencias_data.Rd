@@ -20,3 +20,10 @@ usando cache em .rda:
   - cache "bruto" por planilha via cached_excel()
   - cache "agregado" via referencias_data.rda (este loader)
 }
+\details{
+Nesta versão, além de ler as novas abas do arquivo Excel, também
+padroniza os nomes das colunas para evitar problemas decorrentes de:
+  - quebras de linha nos cabeçalhos;
+  - espaços extras no início/fim;
+  - pequenas variações de nomenclatura entre versões da planilha.
+}

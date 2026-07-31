@@ -175,6 +175,38 @@
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
+
+/* Cards-resumo da Cobertura Assistencial nos níveis agregados. */
+.custom-box.aps-summary-card{
+  overflow: hidden;
+  padding: 18px 16px 14px;
+  border: 1px solid #d8e1eb;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #ffffff 0%, #f5f8fb 100%);
+  color: #0a1e3c;
+  box-shadow: 0 6px 18px rgba(10, 30, 60, 0.10);
+}
+
+.custom-box.aps-summary-card h4{
+  color: #34465c;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.custom-box.aps-summary-card h3{
+  color: #0a1e3c;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  text-shadow: none;
+}
+
+.custom-box.aps-summary-card select.form-control{
+  border-color: #b8c7d8 !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 1px 4px rgba(10, 30, 60, 0.08) !important;
+}
 .reduced-padding {
   padding-top: 5px !important;
   padding-bottom: 5px !important;
@@ -245,14 +277,14 @@
 
 /* MEXER NO TAMANHO DO BLOCO DA BRAND (IMPORTANTE PARA AJUSTAR COM A LARGURA DA SIDEBAR) */
 .layout-navbar-fixed .wrapper .main-sidebar:hover .brand-link {
-  width: 370px !important;
+  width: 400px !important;
   transition: none !important;
 }
 .layout-navbar-fixed .wrapper .brand-link {
   overflow: hidden;
   position: fixed;
   top: 0;
-  width: 370px !important;
+  width: 400px !important;
   transition: none !important;
   z-index: 1035;
 }
@@ -723,6 +755,30 @@
   }
 }
 
+@media (min-width: 768px) and (max-width: 1200px) {
+  .home-card-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--grid-gap);
+    width: 100%;
+    max-width: 1400px;
+    margin: 8px auto 6px auto;
+    padding: 0 10px;
+  }
+
+  .home-card-groups > .row,
+  .home-card-groups > .row > .col-sm-12,
+  .home-card-groups .home-card-grid {
+    display: contents !important;
+  }
+
+  .home-card-groups .home-card-grid--two > .home-card:last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc((100% - var(--grid-gap)) / 2);
+  }
+}
+
 .home-card.home-card--lg {
   border-radius: 12px;
   padding: 26px 22px;
@@ -928,6 +984,146 @@
   padding-bottom: 8px !important;
 }
 
+.estab-ref-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+.estab-ref-name {
+  width: 100%;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.estab-address-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  border: 1px solid #b9c9dc;
+  border-radius: 6px;
+  background: #eef5fb;
+  color: #264061;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.estab-address-btn:hover,
+.estab-address-btn:focus {
+  background: #dfeefa;
+  border-color: #7fa4c8;
+  color: #1f2b4d;
+  outline: none;
+}
+
+.estab-address-btn .fa,
+.estab-address-btn .fas {
+  font-size: 12px;
+}
+
+.estab-address-modal {
+  color: #1f2b4d;
+}
+
+.estab-address-modal-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.estab-address-modal-text {
+  border-left: 4px solid #264061;
+  background: #f6f9fc;
+  padding: 10px 12px;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.estab-download-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.estab-download-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  z-index: 20;
+}
+
+.estab-download-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111111;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.estab-download-toggle:hover,
+.estab-download-toggle:focus {
+  background: #f7f9fc;
+  border-color: #8f9baa;
+  color: #000000;
+  outline: none;
+}
+
+.estab-download-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 112px;
+  padding: 5px;
+  border: 1px solid #d6e0eb;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(31, 43, 77, 0.16);
+}
+
+.estab-download-dropdown:hover .estab-download-menu,
+.estab-download-dropdown:focus-within .estab-download-menu {
+  display: block;
+}
+
+.estab-download-item,
+.estab-download-item:visited {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 4px;
+  color: #111111 !important;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none !important;
+  text-transform: uppercase;
+}
+
+.estab-download-item:hover,
+.estab-download-item:focus {
+  background: #eef3f8;
+  color: #000000 !important;
+  outline: none;
+}
+
 /* =========================================================
    Estabelecimentos (modo abas): estilo igual ao bloco de Gráficos Pré-natal
    (cores da .custom-radio: #264061 e #1f2b4d)
@@ -1017,6 +1213,500 @@
   gap: 10px !important;
 }
 
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs{
+  border-radius: 6px !important;
+  box-shadow: 0 1px 8px rgba(31, 43, 77, 0.08) !important;
+  border: 1px solid #e4e9f0 !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header{
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border-bottom: 0 !important;
+  padding: 12px 14px !important;
+  box-shadow: none !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs{
+  gap: 8px !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link{
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #cfd8e3 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-item + .nav-item .nav-link{
+  border-left: 1px solid #cfd8e3 !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active{
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #1f2933 !important;
+  box-shadow: inset 0 0 0 1px #1f2933 !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link:hover,
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link:focus{
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #8f9baa !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active:hover,
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active:focus{
+  border-color: #1f2933 !important;
+  box-shadow: inset 0 0 0 1px #1f2933 !important;
+}
+
+.aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-body{
+  background: #ffffff !important;
+  padding: 16px 14px 12px 14px !important;
+}
+
+.aps-graph-tabs .tab-content{
+  width: 100% !important;
+}
+
+.aps-graph-tabs .tab-pane > .row + .row{
+  margin-top: 14px !important;
+}
+
+/* Cards de gráficos APS: mantém todos os itens de uma mesma linha com a
+   mesma altura, inclusive através dos wrappers criados pelo spinner/Shiny. */
+.aps-graph-tabs .tab-pane > .row{
+  align-items: stretch !important;
+}
+
+.aps-graph-tabs .aps-plot-col{
+  display: flex;
+  min-width: 0;
+}
+
+.aps-graph-tabs .aps-plot-col > .shiny-spinner-output-container,
+.aps-graph-tabs .aps-plot-col .shiny-html-output,
+.aps-graph-tabs .aps-plot-card-host,
+.aps-graph-tabs .aps-plot-card-host > div{
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.aps-graph-tabs .aps-plot-col > .shiny-spinner-output-container{
+  flex-direction: column;
+  min-height: 0;
+}
+
+.aps-graph-tabs .aps-plot-card-host > div > .card{
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin-bottom: 0;
+}
+
+.aps-graph-tabs .aps-plot-card-host .card-header{
+  display: flex;
+  align-items: center;
+  gap: 0 !important;
+  min-height: 70px;
+  padding-right: 4px !important;
+  position: relative;
+  z-index: 20;
+}
+
+.aps-graph-tabs .aps-plot-card-host .card-title{
+  display: flex;
+  flex: 1 1 auto;
+  float: none;
+  width: 100%;
+  padding-right: 0 !important;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.aps-graph-tabs .aps-plot-card-host .card-body{
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: auto !important;
+  min-height: 0;
+}
+
+.aps-plot-viewport{
+  flex: 0 0 auto;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scrollbar-gutter: stable;
+}
+
+.aps-plot-caption{
+  flex: 0 0 auto;
+  min-height: 58px;
+  margin-top: auto;
+  padding: 8px 2px 0 2px;
+  border-top: 1px solid #eef1f4;
+  color: #333333;
+  font-size: 12px;
+}
+
+.aps-card-title-with-help{
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.aps-card-title-text{
+  min-width: 0;
+}
+
+.aps-card-title-with-locality-filter{
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.aps-locality-filter-control{
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-left: auto;
+  position: relative;
+}
+
+.aps-locality-filter-control > .form-group{
+  display: inline-flex !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+}
+
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn{
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  font-size: 15px !important;
+}
+
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn .filter-option{
+  display: none !important;
+}
+
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn::after{
+  display: none !important;
+}
+
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn:hover,
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn:focus,
+.aps-locality-filter-control .bootstrap-select > .dropdown-toggle.btn:focus-visible{
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.aps-locality-filter-control .dropdown-menu{
+  z-index: 1080;
+  right: 0 !important;
+  left: auto !important;
+  width: 300px;
+  min-width: 280px;
+  padding: 10px;
+}
+
+.aps-locality-filter-control .bootstrap-select{
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.aps-locality-filter-icon{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.aps-card-help-btn.btn{
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.aps-card-help-btn.btn:hover{
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #dbe6ff !important;
+}
+
+.aps-card-help-btn.btn:focus,
+.aps-card-help-btn.btn:focus-visible{
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7) !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs{
+  border-radius: 6px !important;
+  box-shadow: 0 1px 8px rgba(31, 43, 77, 0.08) !important;
+  border: 1px solid #e4e9f0 !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header{
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border-bottom: 0 !important;
+  padding: 12px 14px !important;
+  box-shadow: none !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs{
+  gap: 8px !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link{
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid #cfd8e3 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-item + .nav-item .nav-link{
+  border-left: 1px solid #cfd8e3 !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active{
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #1f2933 !important;
+  box-shadow: inset 0 0 0 1px #1f2933 !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link:hover,
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link:focus{
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #8f9baa !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active:hover,
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-header .nav-tabs .nav-link.active:focus{
+  border-color: #1f2933 !important;
+  box-shadow: inset 0 0 0 1px #1f2933 !important;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-body{
+  background: #ffffff !important;
+  padding: 16px 14px 12px 14px !important;
+}
+
+.aps2-graph-tabs .tab-content{
+  width: 100% !important;
+}
+
+.aps2-graph-tabs .tab-pane > .row + .row{
+  margin-top: 14px !important;
+}
+
+/* Indicadores Assistenciais 2 — acesso ao pré-natal */
+.prenatal-filter-row{
+  align-items: flex-end;
+  margin-bottom: 4px;
+}
+
+.prenatal-filter-row .form-group,
+.prenatal-filter-row .bootstrap-select{
+  width: 100% !important;
+}
+
+.prenatal-comparison-disabled label{
+  display: block;
+  margin-bottom: 5px;
+}
+
+.prenatal-comparison-disabled .form-control{
+  display: flex;
+  align-items: center;
+  height: 38px;
+  border: 1px solid #d8dee6;
+  border-radius: 4px;
+  background: #f4f6f8;
+  color: #7b8794;
+  font-size: 14px;
+  cursor: not-allowed;
+}
+
+.prenatal-series-note{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 16px 0;
+  padding: 9px 12px;
+  border: 1px solid #dfe6ee;
+  border-left: 3px solid #0a1e3c;
+  border-radius: 4px;
+  background: #f8fafc;
+  color: #4e5d6c;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.prenatal-series-note .fa,
+.prenatal-series-note .fas{
+  flex: 0 0 auto;
+  color: #0a1e3c;
+}
+
+.aps2-graph-tabs > .col-sm-12 > .card.card-tabs{
+  margin-bottom: 0 !important;
+}
+
+.aps2-graph-tabs .tab-content,
+.aps2-graph-tabs .tab-pane{
+  min-width: 0;
+}
+
+.aps2-graph-tabs .prenatal-indicator-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-right: -7px;
+  margin-left: -7px;
+}
+
+.aps2-graph-tabs .prenatal-indicator-col{
+  display: flex;
+  min-width: 0;
+  padding-right: 7px;
+  padding-left: 7px;
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host,
+.aps2-graph-tabs .prenatal-indicator-card-host > div{
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host > div > .card{
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin-bottom: 0;
+  overflow: hidden;
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(31, 43, 77, 0.07);
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host .card > .card-header{
+  display: flex;
+  align-items: center;
+  min-height: 66px;
+  padding: 10px 13px !important;
+  background: #0a1e3c !important;
+  border-bottom: 0 !important;
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host .card > .card-header .card-title{
+  float: none;
+  width: 100%;
+  margin: 0;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host .card > .card-body{
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 12px 10px 8px 10px !important;
+  background: #ffffff !important;
+}
+
+.aps2-graph-tabs .prenatal-indicator-subtitle{
+  flex: 0 0 auto;
+  min-height: 42px;
+  margin: 0 4px 4px 4px;
+  color: #596472;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.aps2-graph-tabs .prenatal-indicator-card-host .highchart{
+  flex: 0 0 330px;
+  width: 100% !important;
+  min-width: 0;
+}
+
+.aps2-graph-tabs .prenatal-quality-empty{
+  min-height: 392px;
+}
+
+@media (max-width: 767.98px){
+  .aps2-graph-tabs .prenatal-indicator-col{
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 14px;
+  }
+
+  .aps2-graph-tabs .prenatal-indicator-col:last-child{
+    margin-bottom: 0;
+  }
+}
+
 /* =========================================================
    Título da página com botão de ajuda (canto direito)
    ========================================================= */
@@ -1052,4 +1742,738 @@
 /* Opcional: melhora acessibilidade visual no foco */
 .panel-title-custom.panel-title-with-help .btn-help-toggle:focus{
   filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
+}
+
+.panel-title-custom.panel-title-with-help.estab-title-with-actions{
+  padding-right: 104px;
+}
+
+.panel-title-custom.panel-title-with-help.estab-title-with-actions .estab-title-actions{
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 40;
+}
+
+.panel-title-custom.panel-title-with-help.estab-title-with-actions .estab-title-actions .btn-help-toggle{
+  position: static !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.estab-title-download-dropdown{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.estab-title-download-menu{
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 112px;
+  padding: 5px;
+  border: 1px solid #d6e0eb;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(31, 43, 77, 0.16);
+  z-index: 1050;
+}
+
+.estab-title-download-dropdown:hover .estab-title-download-menu,
+.estab-title-download-dropdown:focus-within .estab-title-download-menu{
+  display: block;
+}
+
+.panel-title-custom .obitos-title-text{
+  display: block;
+  line-height: 1.16;
+}
+
+.obitos-page-description{
+  margin: -4px 0 18px 0;
+  padding: 14px 18px 12px 18px;
+  border: 1px solid #d9e2ec;
+  border-left: 5px solid #466f9d;
+  border-radius: 8px;
+  background: #f9fbfd;
+  color: #25364a;
+  font-size: 15px;
+  line-height: 1.55;
+  box-shadow: 0 2px 8px rgba(10, 30, 60, 0.08);
+}
+
+.obitos-page-description p{
+  margin: 0 0 8px 0;
+}
+
+.obitos-page-description p:last-child{
+  margin-bottom: 0;
+}
+
+.obitos-page-description ul{
+  margin: 2px 0 10px 1.05rem;
+  padding-left: 1rem;
+}
+
+.obitos-page-description li + li{
+  margin-top: 2px;
+}
+
+.obitos-page-description b,
+.obitos-page-description strong{
+  color: #0A1E3C;
+}
+
+@media (max-width: 768px){
+  .panel-title-custom .obitos-title-text{
+    font-size: 25px;
+  }
+
+  .obitos-page-description{
+    padding: 12px 14px 10px 14px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   Responsividade global
+
+   O layout original permanece inalterado em desktops amplos. Abaixo de
+   1440px, linhas com visualizações e resumos ganham mais espaço útil; em
+   viewports menores, os elementos são empilhados de forma progressiva.
+   As classes responsive-* são aplicadas pelo scripts.js apenas às linhas
+   correspondentes, evitando interferência nas regras de negócio dos módulos.
+   ========================================================= */
+
+@media (max-width: 1439.98px){
+  html,
+  body,
+  .wrapper,
+  .content-wrapper,
+  .content-wrapper .content,
+  .content-wrapper .container-fluid,
+  .content-wrapper .tab-content,
+  .content-wrapper .tab-pane{
+    max-width: 100%;
+  }
+
+  html,
+  body{
+    overflow-x: hidden;
+  }
+
+  .content-wrapper .row > [class*="col-"],
+  .content-wrapper .card,
+  .content-wrapper .card-body,
+  .content-wrapper .tab-content,
+  .content-wrapper .tab-pane{
+    min-width: 0;
+  }
+
+  .content-wrapper img,
+  .content-wrapper svg,
+  .content-wrapper canvas,
+  .content-wrapper iframe,
+  .content-wrapper .html-widget,
+  .content-wrapper .plotly,
+  .content-wrapper .highchart,
+  .content-wrapper .leaflet{
+    max-width: 100%;
+  }
+
+  .content-wrapper .table-responsive,
+  .content-wrapper .dataTables_wrapper,
+  .content-wrapper .reactable{
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content-wrapper .card-header,
+  .content-wrapper .card-title,
+  .panel-title-custom,
+  .section-header{
+    overflow-wrap: anywhere;
+  }
+
+  .content-wrapper .nav-tabs{
+    display: flex;
+    flex-wrap: wrap;
+    height: auto;
+  }
+
+  .content-wrapper .nav-tabs .nav-item,
+  .content-wrapper .nav-tabs .nav-link{
+    min-width: 0;
+  }
+
+  .responsive-visual-row{
+    align-items: stretch;
+  }
+
+  .responsive-visual-col{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .responsive-visual-col > *{
+    width: 100%;
+    min-width: 0;
+  }
+
+  .responsive-visual-row > .responsive-visual-col.col-sm-4,
+  .responsive-visual-row > .responsive-visual-col.col-md-4,
+  .aps-graph-tabs .tab-pane > .row > .aps-plot-col.col-sm-4,
+  .aps2-graph-tabs .prenatal-indicator-row > .prenatal-indicator-col.col-sm-4{
+    flex: 0 0 50%;
+    max-width: 50%;
+    margin-bottom: 14px;
+  }
+
+  .responsive-visual-row > .responsive-visual-col.col-sm-4:last-child:nth-child(odd),
+  .responsive-visual-row > .responsive-visual-col.col-md-4:last-child:nth-child(odd),
+  .aps-graph-tabs .tab-pane > .row > .aps-plot-col.col-sm-4:last-child:nth-child(odd),
+  .aps2-graph-tabs .prenatal-indicator-row > .prenatal-indicator-col.col-sm-4:last-child:nth-child(odd){
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .responsive-summary-row > .responsive-summary-col.col-sm-3,
+  .responsive-summary-row > .responsive-summary-col.col-md-3{
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .responsive-filter-row > .col-sm-3,
+  .responsive-filter-row > .col-md-3{
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .panel-title-custom{
+    font-size: clamp(28px, 2.15vw, 34px);
+  }
+}
+
+@media (max-width: 1199.98px){
+  .responsive-visual-row > .responsive-visual-col.col-sm-8,
+  .responsive-visual-row > .responsive-visual-col.col-md-8{
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .responsive-visual-row > .responsive-visual-col.col-sm-8 ~ [class*="col-"],
+  .responsive-visual-row > .responsive-visual-col.col-md-8 ~ [class*="col-"],
+  .responsive-visual-row > [class*="col-"]:has(~ .responsive-visual-col.col-sm-8),
+  .responsive-visual-row > [class*="col-"]:has(~ .responsive-visual-col.col-md-8){
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .responsive-filter-row{
+    row-gap: 8px;
+  }
+
+  .content-wrapper .dataTables_scrollBody{
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1099.98px){
+  .responsive-visual-row > .responsive-visual-col.col-sm-4,
+  .responsive-visual-row > .responsive-visual-col.col-md-4,
+  .responsive-visual-row > .responsive-visual-col.col-sm-6,
+  .responsive-visual-row > .responsive-visual-col.col-md-6,
+  .aps-graph-tabs .tab-pane > .row > .aps-plot-col.col-sm-4,
+  .aps-graph-tabs .tab-pane > .row > .aps-plot-col.col-sm-6,
+  .aps2-graph-tabs .prenatal-indicator-row > .prenatal-indicator-col.col-sm-4{
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .responsive-visual-row > .responsive-visual-col + .responsive-visual-col,
+  .aps-graph-tabs .tab-pane > .row > .aps-plot-col + .aps-plot-col{
+    margin-top: 14px;
+  }
+
+  .responsive-visual-card{
+    max-width: 100%;
+  }
+
+  .panel-title-custom{
+    font-size: clamp(25px, 3.1vw, 31px);
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 767.98px){
+  :root{
+    --navbar-height: 68px;
+  }
+
+  .content-wrapper .content{
+    padding-right: 8px !important;
+    padding-left: 8px !important;
+  }
+
+  .content-wrapper .row{
+    margin-right: -6px;
+    margin-left: -6px;
+  }
+
+  .content-wrapper .row > [class*="col-"]{
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .responsive-summary-row > .responsive-summary-col.col-sm-3,
+  .responsive-summary-row > .responsive-summary-col.col-md-3,
+  .responsive-filter-row > .col-sm-3,
+  .responsive-filter-row > .col-md-3,
+  .responsive-filter-row > .col-sm-4,
+  .responsive-filter-row > .col-md-4,
+  .responsive-filter-row > .col-sm-6,
+  .responsive-filter-row > .col-md-6{
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .responsive-summary-row > .responsive-summary-col{
+    margin-bottom: 10px;
+  }
+
+  .custom-box{
+    height: auto !important;
+    min-height: 150px;
+    padding: 14px 12px;
+  }
+
+  .custom-box h3,
+  .custom-box.aps-summary-card h3{
+    font-size: clamp(28px, 9vw, 36px);
+  }
+
+  .custom-box h4{
+    min-height: 0;
+    font-size: 15px;
+  }
+
+  .panel-title-custom{
+    margin-bottom: 14px;
+    padding: 9px 44px 9px 12px;
+    border-radius: 8px;
+    font-size: clamp(22px, 6.5vw, 28px);
+    line-height: 1.18;
+    text-shadow: none;
+  }
+
+  .panel-title-custom.panel-title-with-help,
+  .panel-title-custom.panel-title-with-help.estab-title-with-actions{
+    padding-right: 82px;
+  }
+
+  .panel-title-custom.panel-title-with-help.estab-title-with-actions .estab-title-actions{
+    right: 10px;
+    gap: 8px;
+  }
+
+  .obitos-page-description,
+  .aps-page-description{
+    margin-bottom: 14px;
+    padding: 11px 12px 10px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .content-wrapper .card-header{
+    padding: 10px 11px !important;
+  }
+
+  .content-wrapper .card-body{
+    padding: 11px 9px !important;
+  }
+
+  .content-wrapper .nav-tabs{
+    gap: 6px !important;
+  }
+
+  .content-wrapper .nav-tabs .nav-item{
+    flex: 1 1 160px;
+    margin: 0 !important;
+  }
+
+  .content-wrapper .nav-tabs .nav-link{
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 40px;
+    padding: 7px 9px !important;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .aps-locality-filter-control .dropdown-menu{
+    right: -8px !important;
+    width: min(300px, calc(100vw - 36px));
+    min-width: 0;
+  }
+
+  .form-group label{
+    font-size: 15px;
+  }
+
+  .dataTables_scrollBody{
+    min-height: 300px !important;
+    height: min(400px, 55vh) !important;
+    max-height: 55vh !important;
+  }
+
+  .layout-navbar-fixed .wrapper .main-sidebar,
+  .layout-navbar-fixed .wrapper .main-sidebar:hover,
+  .layout-navbar-fixed .wrapper .brand-link,
+  .layout-navbar-fixed .wrapper .main-sidebar:hover .brand-link{
+    width: min(400px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .main-sidebar .brand-link .brand-image{
+    max-width: calc(100vw - 56px);
+    object-fit: contain;
+  }
+
+  .home-card-grid.home-card-grid--three,
+  .home-card-grid.home-card-grid--two{
+    grid-template-columns: minmax(0, 1fr);
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .home-card,
+  .home-card.home-card--lg{
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: 18px 14px;
+  }
+
+  .estab-tabbox-fill .card{
+    height: auto !important;
+    min-height: 520px;
+    max-height: none !important;
+  }
+
+  .content-wrapper iframe{
+    min-height: 70vh !important;
+    height: 70vh !important;
+  }
+}
+
+@media (max-width: 479.98px){
+  .content-wrapper .content{
+    padding-right: 5px !important;
+    padding-left: 5px !important;
+  }
+
+  .panel-title-custom{
+    font-size: clamp(20px, 6.8vw, 25px);
+  }
+
+  .content-wrapper .nav-tabs .nav-item{
+    flex-basis: 100%;
+  }
+
+  .aps-graph-tabs > .col-sm-12 > .card.card-tabs > .card-body,
+  .aps2-graph-tabs > .col-sm-12 > .card.card-tabs > .card-body{
+    padding: 10px 6px 8px !important;
+  }
+
+  .home-card,
+  .home-card.home-card--lg{
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .home-card .home-icon,
+  .home-card.home-card--lg .home-icon{
+    margin: 0 auto;
+  }
+}
+
+/* =========================================================
+   Ajustes responsivos específicos
+   ========================================================= */
+
+@media (max-width: 1439.98px){
+  /* Séries de Mortalidade: todos os cards acompanham o maior cabeçalho. */
+  .responsive-series-header{
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .responsive-series-header .card-title{
+    margin-bottom: 0;
+    line-height: 1.25;
+  }
+
+  /* Estabelecimentos: a tabela ocupa continuamente a largura disponível. */
+  [id$="-table_baixo"],
+  [id$="-table_agpar"],
+  [id$="-table_posnatal"],
+  [id$="-table_baixo"] .ReactTable,
+  [id$="-table_agpar"] .ReactTable,
+  [id$="-table_posnatal"] .ReactTable,
+  [id$="-table_baixo"] .rt-table,
+  [id$="-table_agpar"] .rt-table,
+  [id$="-table_posnatal"] .rt-table{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  [id$="-table_baixo"] .rt-tr,
+  [id$="-table_agpar"] .rt-tr,
+  [id$="-table_posnatal"] .rt-tr{
+    min-width: 100%;
+  }
+
+  /* Óbitos: nenhum ancestral pode forçar a tabela para fora da coluna. */
+  [id$="-tabela_oficiais"],
+  [id$="-tabela_nao"],
+  [id$="-tabela_oficiais"] .ReactTable,
+  [id$="-tabela_nao"] .ReactTable,
+  [id$="-tabela_oficiais"] .rt-table,
+  [id$="-tabela_nao"] .rt-table{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  [id$="-tabela_oficiais"] .rt-table,
+  [id$="-tabela_nao"] .rt-table{
+    overflow-x: hidden !important;
+  }
+
+  .obitos-table-top-scroll{
+    display: none;
+    flex: 0 0 15px;
+    width: 100%;
+    height: 15px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid #dfe5ec;
+    background: #f8fafc;
+    scrollbar-color: #8795a5 #edf1f5;
+    scrollbar-width: thin;
+  }
+
+  .obitos-table-top-scroll.is-needed{
+    display: block;
+  }
+
+  .obitos-table-top-scroll-spacer{
+    height: 1px;
+  }
+}
+
+@media (max-width: 1199.98px){
+  /*
+   * Indicadores Assistenciais: filtros, tabela e gráfico formam uma pilha
+   * regular, sem conservar alturas fixas do layout em duas colunas.
+   */
+  .responsive-assist-layout > .responsive-assist-filter,
+  .responsive-assist-layout > .responsive-assist-content{
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .responsive-assist-filter{
+    margin-bottom: 16px;
+  }
+
+  .responsive-assist-content{
+    display: block !important;
+  }
+
+  .responsive-assist-filter > *,
+  .responsive-assist-content > *{
+    width: 100%;
+    min-width: 0;
+  }
+
+  .responsive-assist-filter .card{
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin-bottom: 0;
+  }
+
+  .responsive-assist-filter .card-body{
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .responsive-assist-filter .card-body > div[style*="overflow-y"]{
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+
+  .responsive-assist-content > .card,
+  .responsive-assist-content > div > .card{
+    width: 100%;
+    height: clamp(440px, 58vh, 560px) !important;
+    min-height: 440px;
+    margin: 0 0 16px 0;
+  }
+
+  .responsive-assist-content > .card > .card-body,
+  .responsive-assist-content > div > .card > .card-body{
+    flex: 1 1 auto;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .responsive-assist-content > .card:last-child,
+  .responsive-assist-content > div:last-child > .card{
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 767.98px){
+  .responsive-assist-filter{
+    margin-bottom: 12px;
+  }
+
+  .responsive-assist-content > .card,
+  .responsive-assist-content > div > .card{
+    height: clamp(420px, 64vh, 520px) !important;
+    min-height: 420px;
+    margin-bottom: 12px;
+  }
+}
+
+/* =========================================================
+   Barra lateral responsiva com estado estável
+
+   O estado recolhido permanece estável durante redimensionamentos. Em desktop,
+   a faixa compacta expande somente por hover/foco ou pelo botão superior. Em
+   telas compactas, a barra funciona como painel sobreposto e não reserva uma
+   faixa branca ao lado do conteúdo.
+   ========================================================= */
+
+:root{
+  --sidebar-expanded-width: 400px;
+  --sidebar-collapsed-width: 4.6rem;
+  --sidebar-compact-gutter: 24px;
+}
+
+@media (min-width: 992px){
+  body.sidebar-mini.sidebar-collapse .main-sidebar,
+  body.sidebar-mini.sidebar-collapse .main-sidebar::before{
+    width: var(--sidebar-collapsed-width) !important;
+    max-width: var(--sidebar-collapsed-width) !important;
+    margin-left: 0 !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .brand-link{
+    width: var(--sidebar-collapsed-width) !important;
+    max-width: var(--sidebar-collapsed-width) !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .main-sidebar:hover,
+  body.sidebar-mini.sidebar-collapse .main-sidebar.sidebar-focused,
+  body.sidebar-mini.sidebar-collapse .main-sidebar:hover::before,
+  body.sidebar-mini.sidebar-collapse .main-sidebar.sidebar-focused::before,
+  body.sidebar-mini.sidebar-collapse .main-sidebar:hover .brand-link,
+  body.sidebar-mini.sidebar-collapse .main-sidebar.sidebar-focused .brand-link{
+    width: var(--sidebar-expanded-width) !important;
+    max-width: var(--sidebar-expanded-width) !important;
+  }
+
+  body.sidebar-mini.sidebar-collapse .content-wrapper,
+  body.sidebar-mini.sidebar-collapse .main-footer,
+  body.sidebar-mini.sidebar-collapse .main-header{
+    margin-left: var(--sidebar-collapsed-width) !important;
+  }
+
+  body.sidebar-mini:not(.sidebar-collapse) .main-sidebar,
+  body.sidebar-mini:not(.sidebar-collapse) .main-sidebar::before,
+  body.sidebar-mini:not(.sidebar-collapse) .brand-link{
+    width: var(--sidebar-expanded-width) !important;
+    max-width: var(--sidebar-expanded-width) !important;
+    margin-left: 0 !important;
+  }
+
+  body.sidebar-mini:not(.sidebar-collapse) .content-wrapper,
+  body.sidebar-mini:not(.sidebar-collapse) .main-footer,
+  body.sidebar-mini:not(.sidebar-collapse) .main-header{
+    margin-left: var(--sidebar-expanded-width) !important;
+  }
+}
+
+@media (max-width: 991.98px){
+  body.sidebar-mini .main-header,
+  body.sidebar-mini .content-wrapper,
+  body.sidebar-mini .main-footer{
+    margin-left: 0 !important;
+  }
+
+  body.sidebar-mini .main-sidebar{
+    width: min(
+      var(--sidebar-expanded-width),
+      calc(100vw - var(--sidebar-compact-gutter))
+    ) !important;
+    max-width: calc(100vw - var(--sidebar-compact-gutter)) !important;
+    margin-left: 0 !important;
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 0.25s ease-in-out,
+      visibility 0s linear 0.25s !important;
+  }
+
+  body.sidebar-mini .main-sidebar::before{
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  body.sidebar-mini .main-sidebar .brand-link,
+  body.sidebar-mini .main-sidebar:hover .brand-link{
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body.sidebar-mini.sidebar-open .main-sidebar{
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      transform 0.25s ease-in-out,
+      visibility 0s linear 0s !important;
+  }
+
+  body.sidebar-mini:not(.sidebar-open) #sidebar-overlay{
+    display: none !important;
+  }
 }

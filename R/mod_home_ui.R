@@ -41,8 +41,11 @@ mod_home_ui <- function(id) {
         # # fluidRow(column(12, div(class = "section-title", "Funcionalidades"))),
         # fluidRow(column(12, div(class = "section-divider"))),
 
-        # GRID 1: 3 CARDS (um por menu principal)
-        fluidRow(
+        div(
+          class = "home-card-groups",
+
+          # GRID 1: 3 CARDS (um por menu principal)
+          fluidRow(
           column(
             width = 12,
             div(class = "home-card-grid home-card-grid--three",
@@ -50,7 +53,7 @@ mod_home_ui <- function(id) {
                 div(class = "home-card home-card--lg blue2",
                     tags$i(class = "fas fa-chart-bar home-card-icon", aria_hidden = "true"),
                     div(class = "home-card-text",
-                        h4("Estatísticas RRAS"),
+                        h4("Rede de Atenção Materna e Perinatal"),
                         p("Indicadores de Atenção Primária organizados por RRAS, DRS, Região de Saúde e Municípios, para suporte ao planejamento e à avaliação regional.")
                     )
                 ),
@@ -59,23 +62,23 @@ mod_home_ui <- function(id) {
                     tags$i(class = "fas fa-heartbeat home-card-icon", aria_hidden = "true"),
                     div(class = "home-card-text",
                         h4("Óbitos de Gestantes e Puérperas"),
-                        p("Monitoramento da mortalidade materna, incluindo séries históricas, informações sobre óbitos oficiais e não considerados, além da possibilidade de análise de dados cruzados.")
+                        p("Monitoramento da mortalidade materna, incluindo séries históricas, informações sobre óbitos classificados como morte materna e óbitos não classificados como morte materna, além da possibilidade de análise de dados cruzados.")
                     )
                 ),
-                # Card 3 — Indicadores Obstétricos
+                # Card 3 — Indicadores Assistenciais
                 div(class = "home-card home-card--lg blue2",
                     tags$i(class = "fas fa-chart-area home-card-icon", aria_hidden = "true"),
                     div(class = "home-card-text",
-                        h4("Indicadores Obstétricos"),
-                        p("Acesso aos indicadores obstétricos do estado de São Paulo, como nascimentos, prematuridade, cesáreas, anomalias congênitas, entre outros, em diferentes níveis de análise.")
+                        h4("Indicadores Assistenciais"),
+                        p("Acesso aos indicadores assistenciais do estado de São Paulo, como nascimentos, prematuridade, cesáreas, anomalias congênitas, entre outros, em diferentes níveis de análise.")
                     )
                 )
             )
           )
-        ),
+          ),
 
-        # GRID 2: 2 CARDS CENTRALIZADOS — “Dados” e “Transparência”
-        fluidRow(
+          # GRID 2: 2 CARDS CENTRALIZADOS — “Dados” e “Transparência”
+          fluidRow(
           column(
             width = 12,
             div(class = "home-card-grid home-card-grid--two",
@@ -95,6 +98,7 @@ mod_home_ui <- function(id) {
                         p("Documentação clara de extração e tratamento, com publicização dos painéis, permitindo que eventuais ajustes na rede de atenção possam ser feitos com maior agilidade conforme novas evidências.")
                     )
                 )
+            )
             )
           )
         ),

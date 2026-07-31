@@ -232,7 +232,7 @@ mod_prematuros_server <- function(id, data_list) {
           )
         )
       ) +
-        ggplot2::geom_col(fill = "#37399a", color = "black") +
+        ggplot2::geom_col(fill = "#0a1e3c", color = "black") +
         ggplot2::labs(x = "Ano", y = "% de prematuros") +
         ggplot2::theme(
           panel.background = ggplot2::element_rect(fill = "white", color = NA),

@@ -32,6 +32,7 @@ Imports:
     gtsummary,
     highcharter,
     gt,
+    jsonlite,
     openxlsx,
     tibble,
     tidyr

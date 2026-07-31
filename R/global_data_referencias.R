@@ -17,18 +17,28 @@
 #' @export
 load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = FALSE) {
 
+  file_path <- file.path(path_data, "Estabelecimentos de referencia - ReMaP.xlsx")
+  cache_version <- 3L
+
   # ------------------------------------------------------------------
   # 0) Cache agregado (referencias_data.rda)
   # ------------------------------------------------------------------
   if (exists("cache_file")) {
     agg_path <- cache_file("referencias_data")
 
-    if (!isTRUE(rebuild) && file.exists(agg_path)) {
+    agg_is_fresh <- file.exists(agg_path) &&
+      file.exists(file_path) &&
+      file.mtime(agg_path) >= file.mtime(file_path)
+
+    if (!isTRUE(rebuild) && isTRUE(agg_is_fresh)) {
       e <- new.env(parent = emptyenv())
       load(agg_path, envir = e)
 
       if (exists("referencias_data", envir = e, inherits = FALSE)) {
-        return(get("referencias_data", envir = e, inherits = FALSE))
+        referencias_data <- get("referencias_data", envir = e, inherits = FALSE)
+        if (identical(attr(referencias_data, "cache_version"), cache_version)) {
+          return(referencias_data)
+        }
       }
     }
   } else {
@@ -57,6 +67,27 @@ load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = 
   standardize_ref_cols <- function(df) {
     if (!is.data.frame(df)) return(df)
 
+    normalize_cnes_display <- function(x) {
+      if (is.null(x)) return(character(0))
+
+      if (is.numeric(x)) {
+        out <- ifelse(
+          is.na(x),
+          NA_character_,
+          format(x, scientific = FALSE, trim = TRUE, digits = 15)
+        )
+      } else {
+        out <- as.character(x)
+      }
+
+      out <- gsub("\u00A0", " ", out, fixed = TRUE)
+      out <- trimws(out)
+      out <- sub("([\\.,])0+$", "", out)
+      out <- gsub("[^0-9]", "", out)
+      out[out == ""] <- NA_character_
+      out
+    }
+
     old_names <- names(df)
     clean_names <- vapply(old_names, squish_label, character(1))
 
@@ -69,14 +100,20 @@ load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = 
 
       # Tabela AGPAR e Mat
       "CNES (AGPAR)" = "CNES (AGPAR)",
+      "CNES (MATERNIDADE DE ALTO RISCO)" =
+        "CNES (MATERNIDADE DE ALTO RISCO)",
       "AMBULATORIO DE GESTACAO E PUERPERIO DE ALTO RISCO (AGPAR)" =
         "AMBULATÓRIO DE GESTAÇÃO E PUERPÉRIO DE ALTO RISCO (AGPAR)",
       "MUNICIPIO DO ESTABELECIMENTO (AGPAR)" =
         "MUNICÍPIO DO ESTABELECIMENTO (AGPAR)",
+      "ENDERECO DO ESTABELECIMENTO (AGPAR)" =
+        "ENDEREÇO DO ESTABELECIMENTO (AGPAR)",
       "MATERNIDADE DE ALTO RISCO DE REFERENCIA" =
         "MATERNIDADE DE ALTO RISCO DE REFERÊNCIA",
       "MUNICIPIO DA MATERNIDADE DE ALTO RISCO" =
         "MUNICÍPIO DA MATERNIDADE DE ALTO RISCO",
+      "ENDERECO DO ESTABELECIMENTO DE ALTO RISCO" =
+        "ENDEREÇO DO ESTABELECIMENTO DE ALTO RISCO",
 
       # Tabela Baixo Risco
       "CNES" = "CNES",
@@ -84,6 +121,8 @@ load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = 
         "MATERNIDADE DE BAIXO RISCO DE REFERÊNCIA",
       "MUNICIPIO DO ESTABELECIMENTO" =
         "MUNICÍPIO DO ESTABELECIMENTO",
+      "ENDERECO DO ESTABELECIMENTO DE BAIXO RISCO" =
+        "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO",
 
       # Tabela A-SEG
       "AMBULATORIO DE ACOMPANHAMENTO DE CRIANCAS DE ALTO RISCO PRIORITARIAMENTE EGRESSAS DE UNIDADE NEONATAL (A-SEG)" =
@@ -102,14 +141,21 @@ load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = 
     }, character(1))
 
     names(df) <- final_names
+
+    cnes_cols <- intersect(
+      c("CNES", "CNES (AGPAR)", "CNES (MATERNIDADE DE ALTO RISCO)"),
+      names(df)
+    )
+    for (col in cnes_cols) {
+      df[[col]] <- normalize_cnes_display(df[[col]])
+    }
+
     df
   }
 
   # ------------------------------------------------------------------
   # 2) Leitura do Excel consolidado
   # ------------------------------------------------------------------
-  file_path <- file.path(path_data, "Estabelecimentos de referência - ReMaP.xlsx")
-
   tabela_baixo <- cached_excel(
     file_path,
     sheet = "Tabela 2 APS - Ref. Baixo Risco",
@@ -135,11 +181,22 @@ load_referencias_data <- function(path_data = app_sys("app", "data"), rebuild = 
   tabela_agpar    <- standardize_ref_cols(tabela_agpar)
   tabela_posnatal <- standardize_ref_cols(tabela_posnatal)
 
+  # A aba A-SEG recebeu provisoriamente o mesmo cabeçalho de endereço da
+  # aba de baixo risco; internamente mantemos um nome sem ambiguidade.
+  if (
+    "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO" %in% names(tabela_posnatal) &&
+      !"ENDEREÇO DO ESTABELECIMENTO (A-SEG)" %in% names(tabela_posnatal)
+  ) {
+    names(tabela_posnatal)[names(tabela_posnatal) == "ENDEREÇO DO ESTABELECIMENTO DE BAIXO RISCO"] <-
+      "ENDEREÇO DO ESTABELECIMENTO (A-SEG)"
+  }
+
   referencias_data <- list(
     tabela_baixo    = tabela_baixo,
     tabela_agpar    = tabela_agpar,
     tabela_posnatal = tabela_posnatal
   )
+  attr(referencias_data, "cache_version") <- cache_version
 
   # ------------------------------------------------------------------
   # 4) Materializa o cache agregado (referencias_data.rda)

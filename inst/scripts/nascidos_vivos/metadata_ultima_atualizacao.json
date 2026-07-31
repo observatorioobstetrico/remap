@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-05-14 04:57:50.104582",
+  "output_xlsx": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/nascidos_vivos_aps.xlsx",
+  "output_rda": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/nascidos_vivos_aps.rda",
+  "municipal_years": [2020, 2021, 2022, 2023, 2024],
+  "sp_years": [2020, 2021, 2022, 2023, 2024, 2025],
+  "datasus_form_url": "https://tabnet.datasus.gov.br/cgi/deftohtm.exe?sinasc/cnv/nvsp.def",
+  "datasus_post_url": "http://tabnet.datasus.gov.br/cgi/tabcgi.exe?sinasc/cnv/nvsp.def",
+  "prefeitura_sp_form_url": "https://tabnet.saude.prefeitura.sp.gov.br/cgi/deftohtm3.exe?secretarias/saude/TABNET/sinasc/nascido.def",
+  "prefeitura_sp_post_url": "https://tabnet.saude.prefeitura.sp.gov.br/cgi/tabcgi.exe?secretarias/saude/TABNET/sinasc/nascido.def",
+  "raw_dir": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/nascidos_vivos/raw"
+}

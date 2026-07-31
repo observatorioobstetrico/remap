@@ -8,31 +8,66 @@
 mod_rras_aps_ui <- function(id) {
   ns <- shiny::NS(id)
   tagList(
-    # Título da tela de Atenção Primária à Saúde
+    tags$script(
+      htmltools::HTML(
+        "
+        (function() {
+          if (window.apsPlotResizeHandlerRegistered) return;
+          window.apsPlotResizeHandlerRegistered = true;
+
+          Shiny.addCustomMessageHandler('aps-resize-plot', function(message) {
+            var plot = document.getElementById(message.id);
+            if (!plot || !message.height) return;
+
+            plot.style.height = message.height + 'px';
+            window.requestAnimationFrame(function() {
+              if (window.Plotly && plot.classList.contains('js-plotly-plot')) {
+                window.Plotly.Plots.resize(plot);
+              }
+            });
+          });
+        })();
+        "
+      )
+    ),
     fluidRow(
       column(
         width = 12,
         tags$div(
           class = "panel-title-custom",
-          "Atenção Primária à Saúde"
-        ),
-        tags$p("", style = "font-size: 20px; font-weight: bold; text-align: center;")
+          tags$span("Cobertura Assistencial")
+        )
       )
     ),
-    # Filtros de seleção (mantidos no topo)
+    fluidRow(
+      column(
+        width = 12,
+        tags$div(
+          class = "obitos-page-description aps-page-description",
+          tags$p(
+            "Este painel apresenta indicadores relacionados à cobertura da atenção à saúde, permitindo acompanhar o acesso da população aos serviços de Atenção Primária à Saúde e à saúde suplementar."
+          )
+        )
+      )
+    ),
     fluidRow(
       column(
         width = 4,
         selectInput(
           inputId = ns("nivel_selection"),
           label = "Selecione o nível de análise:",
-          choices = c("ESTADUAL", "RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+          choices = c(
+            "ESTADO DE SP" = "ESTADUAL",
+            "DRS" = "DRS",
+            "RRAS" = "RRAS",
+            "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE",
+            "MUNICIPAL" = "MUNICIPAL"
+          ),
           selected = "ESTADUAL"
         )
       ),
       column(
         width = 4,
-        # Para nível DRS: exibe o input "analisar_sp"
         conditionalPanel(
           condition = sprintf("input['%s'] == 'DRS'", ns("nivel_selection")),
           selectInput(
@@ -42,7 +77,6 @@ mod_rras_aps_ui <- function(id) {
             selected = "NÃO"
           )
         ),
-        # Para nível MUNICIPAL: exibe o input "analisar_muni_sp"
         conditionalPanel(
           condition = sprintf("input['%s'] == 'MUNICIPAL'", ns("nivel_selection")),
           selectInput(
@@ -52,7 +86,6 @@ mod_rras_aps_ui <- function(id) {
             selected = "NÃO"
           )
         ),
-        # Se não for DRS nem MUNICIPAL, insere um placeholder para manter o alinhamento
         conditionalPanel(
           condition = sprintf("input['%s'] != 'DRS' && input['%s'] != 'MUNICIPAL'", ns("nivel_selection"), ns("nivel_selection")),
           tags$div(style = "height: 68px;")
@@ -64,91 +97,8 @@ mod_rras_aps_ui <- function(id) {
       )
     ),
     br(),
-    # Caixas de totais (dispostas horizontalmente em uma única linha)
-    fluidRow(
-      column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("summary_box_1")))),
-      column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("summary_box_3")))),
-      column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("summary_box_4")))),
-      column(width = 3, shinycssloaders::withSpinner(uiOutput(ns("summary_box_2"))))
-    ),
+    uiOutput(ns("summary_boxes_ui")),
     br(),
-    # Caixas extras para nível MUNICIPAL
-    conditionalPanel(
-      condition = sprintf("input['%s'] == 'MUNICIPAL'", ns("nivel_selection")),
-      uiOutput(ns("municipal_extras"))
-    ),
-    # Bloco para os gráficos quando nível não for MUNICIPAL
-    conditionalPanel(
-      condition = sprintf("input['%s'] != 'MUNICIPAL'", ns("nivel_selection")),
-      # Primeira linha: os três primeiros gráficos
-      fluidRow(
-        column(width = 4, uiOutput(ns("card_plot_nascidos_vivos"))),
-        column(width = 4, uiOutput(ns("card_plot_ubs"))),
-        column(width = 4, uiOutput(ns("card_plot_gestantes_susdependentes")))
-      ),
-      br(),
-      # Se o nível for ESTADUAL, exibe o gráfico único centralizado
-      conditionalPanel(
-        condition = sprintf("input['%s'] == 'ESTADUAL'", ns("nivel_selection")),
-        fluidRow(
-          column(width = 6, offset = 3, uiOutput(ns("card_plot_nascidos_susdependentes_estadual")))
-        )
-      ),
-      # Bloco para RRAS, DRS e REGIÃO DE SAÚDE com tratamento especial para RRAS 6 ou para São Paulo
-      conditionalPanel(
-        condition = sprintf("(input['%s'] == 'RRAS' && input['%s'] == 'RRAS 6') || (input['%s'] == 'DRS' && input['%s'] == 'SIM') || (input['%s'] == 'REGIÃO DE SAÚDE' && input['%s'] == 'SÃO PAULO')",
-                            ns("nivel_selection"), ns("secondary_filter"),
-                            ns("nivel_selection"), ns("analisar_sp"),
-                            ns("nivel_selection"), ns("secondary_filter")),
-        fluidRow(
-          column(width = 4, uiOutput(ns("card_plot_nascidos_susdependentes_rras6"))),
-          column(width = 4, uiOutput(ns("card_plot_cobertura_ans_rras6"))),
-          column(width = 4, uiOutput(ns("card_plot_cobertura_ab_rras6")))
-        )
-      ),
-      conditionalPanel(
-        condition = sprintf("((input['%s'] == 'RRAS' && input['%s'] != 'RRAS 6') || (input['%s'] == 'DRS' && input['%s'] == 'NÃO')) || (input['%s'] == 'REGIÃO DE SAÚDE' && input['%s'] != 'SÃO PAULO')",
-                            ns("nivel_selection"), ns("secondary_filter"),
-                            ns("nivel_selection"), ns("analisar_sp"),
-                            ns("nivel_selection"), ns("secondary_filter")),
-        fluidRow(
-          column(width = 4, uiOutput(ns("card_plot_nascidos_susdependentes_outros"))),
-          column(width = 4, uiOutput(ns("card_plot_cobertura_ans"))),
-          column(width = 4, uiOutput(ns("card_plot_cobertura_esf")))
-        ),
-        br(),
-        fluidRow(
-          column(width = 6, offset = 3, uiOutput(ns("card_plot_cobertura_ab")))
-        )
-      )
-      ## Tabelas de estabelecimentos antigas
-      # ,
-      # br(), br(),
-      # # Tabelas
-      # fluidRow(
-      #   width = 12,
-      #   column(
-      #     width = 6,
-      #     bs4Dash::bs4Card(
-      #       title  = "Estabelecimentos de referência para AAE (AGAR)",
-      #       height = "100%",
-      #       width = NULL,
-      #       collapsible = FALSE,   # Desativa o recurso de minimizar
-      #       DT::DTOutput(ns("table_aae"))
-      #     )
-      #   ),
-      #   br(),
-      #   column(
-      #     width = 6,
-      #     bs4Dash::bs4Card(
-      #       title  = "Estabelecimentos de referência para Parto (Baixo Risco)",
-      #       height = "100%",
-      #       width = NULL,
-      #       collapsible = FALSE,   # Desativa o recurso de minimizar
-      #       DT::DTOutput(ns("table_bxr"))
-      #     )
-      #   )
-      # )
-    )
+    uiOutput(ns("aps_graph_tabs"))
   )
 }

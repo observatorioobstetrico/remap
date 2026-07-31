@@ -14,14 +14,30 @@ mod_estabelecimentos_ui <- function(id) {
       column(
         width = 12,
         tags$div(
-          class = "panel-title-custom panel-title-with-help",
+          class = "panel-title-custom panel-title-with-help estab-title-with-actions",
           tags$span("Estabelecimentos de Referência"),
-          shiny::actionButton(
-            inputId = ns("help_btn"),
-            label   = NULL,
-            icon    = shiny::icon("circle-question"),
-            class   = "btn-help-toggle",
-            `aria-label` = "Ajuda"
+          tags$div(
+            class = "estab-title-actions",
+            tags$div(
+              class = "estab-title-download-dropdown",
+              tags$button(
+                type = "button",
+                class = "btn-help-toggle btn-estab-download-toggle",
+                shiny::icon("download"),
+                `aria-label` = "Baixar dados"
+              ),
+              tags$div(
+                class = "estab-title-download-menu",
+                downloadLink(ns("download_estab_xlsx"), "xlsx", class = "estab-download-item")
+              )
+            ),
+            shiny::actionButton(
+              inputId = ns("help_btn"),
+              label   = NULL,
+              icon    = shiny::icon("circle-question"),
+              class   = "btn-help-toggle",
+              `aria-label` = "Ajuda"
+            )
           )
         )
       )
@@ -37,8 +53,8 @@ mod_estabelecimentos_ui <- function(id) {
           selectInput(
             ns("nivel_selection"),
             label = NULL,
-            choices  = c("RRAS", "DRS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
-            selected = "RRAS"
+            choices  = c("DRS", "RRAS", "REGIÃO DE SAÚDE", "MUNICIPAL"),
+            selected = "DRS"
           )
         )
       ),

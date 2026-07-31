@@ -206,7 +206,7 @@ mod_nascimentos_server <- function(id, data_list) {
           )
         )
       ) +
-        geom_col(fill = "#37399a", color = "black") +
+        geom_col(fill = "#0a1e3c", color = "black") +
         labs(x = "Ano", y = "Nº de nascimentos") +
         scale_x_continuous(breaks = df_plot$ano) +
         scale_y_continuous(labels = function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE)) +

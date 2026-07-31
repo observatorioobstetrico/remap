@@ -162,9 +162,34 @@ mod_obitos_oficiais_server <- function(id, data_list) {
     # 6) Agregado final (linhas visíveis)
     dados_om_final <- reactive({
       dados_om_norm() %>%
+        {
+          if (!"municipio_ocorrencia" %in% names(.)) {
+            dplyr::mutate(., municipio_ocorrencia = NA_character_)
+          } else .
+        } %>%
+        {
+          if (!"municipio_residencia" %in% names(.)) {
+            dplyr::mutate(., municipio_residencia = municipio_sp)
+          } else .
+        } %>%
+        dplyr::mutate(
+          municipio_residencia = dplyr::if_else(
+            is.na(municipio_residencia) | trimws(municipio_residencia) == "",
+            municipio_sp,
+            municipio_residencia
+          ),
+          municipio_ocorrencia = as.character(municipio_ocorrencia),
+          municipio_ocorrencia = dplyr::if_else(
+            is.na(municipio_ocorrencia) | trimws(municipio_ocorrencia) == "",
+            "Não disponível na base",
+            municipio_ocorrencia
+          )
+        ) %>%
         dplyr::group_by(
           capitulo_cid10, causabas_categoria,
-          tipo_de_morte_materna, periodo_do_obito,
+          tipo_de_morte_materna,
+          municipio_residencia, municipio_ocorrencia,
+          periodo_do_obito,
           racacor, investigacao_cmm
         ) %>%
         dplyr::summarise(obitos = sum(as.numeric(obitos), na.rm = TRUE), .groups = "drop")
@@ -181,6 +206,7 @@ mod_obitos_oficiais_server <- function(id, data_list) {
       validate(need(nrow(df) > 0, "Não existem registros para os filtros selecionados."))
 
       total_val <- as.integer(total_om())
+      tem_municipio_ocorrencia <- any(df$municipio_ocorrencia != "Não disponível na base", na.rm = TRUE)
 
       reactable::reactable(
         df,
@@ -213,6 +239,24 @@ mod_obitos_oficiais_server <- function(id, data_list) {
             footer   = total_val
           ),
           tipo_de_morte_materna = reactable::colDef(name = "Tipo de morte materna", aggregate = "unique"),
+          municipio_residencia = reactable::colDef(
+            name = "Município de residência",
+            aggregate = htmlwidgets::JS("function() { return '' }"),
+            format   = list(aggregated = reactable::colFormat(prefix = "Todos"))
+          ),
+          municipio_ocorrencia = reactable::colDef(
+            name = "Município de ocorrência",
+            aggregate = if (tem_municipio_ocorrencia) {
+              htmlwidgets::JS("function() { return '' }")
+            } else {
+              htmlwidgets::JS("function() { return 'Não disponível na base' }")
+            },
+            format = if (tem_municipio_ocorrencia) {
+              list(aggregated = reactable::colFormat(prefix = "Todos"))
+            } else {
+              NULL
+            }
+          ),
           periodo_do_obito = reactable::colDef(
             name = "Período do óbito",
             aggregate = htmlwidgets::JS("function() { return '' }"),
@@ -237,24 +281,92 @@ mod_obitos_oficiais_server <- function(id, data_list) {
     })
 
     # 9) Download
-    output$download_ui <- renderUI({
-      if (input$download_choice == "Sim") {
-        tagList(
-          selectInput(ns("filetype"), "Tipo de arquivo:", c("CSV","XLSX")),
-          downloadButton(ns("download_OM"), "Baixar")
+    slug_download_obitos <- function(x) {
+      x <- x[!is.na(x) & nzchar(x)]
+      slug <- paste(as.character(x), collapse = "_")
+      slug_ascii <- iconv(slug, from = "", to = "ASCII//TRANSLIT", sub = "")
+      if (!is.na(slug_ascii) && nzchar(slug_ascii)) {
+        slug <- slug_ascii
+      }
+      slug <- tolower(gsub("[^[:alnum:]]+", "_", slug))
+      slug <- gsub("^_+|_+$", "", slug)
+      if (!nzchar(slug)) "tabela" else slug
+    }
+
+    download_suffix_om <- reactive({
+      req(input$ano, input$nivel)
+
+      suffix <- switch(
+        input$nivel,
+        "ESTADUAL" = c("estadual", input$ano),
+        "RRAS" = c("rras", req(input$rras), input$ano),
+        "DRS" = c("drs", req(input$drs), input$ano),
+        "REGIÃO DE SAÚDE" = c("regiao_saude", req(input$regiao_de_saude), input$ano),
+        "MUNICIPAL" = c("municipal", req(input$municipio_sp), input$ano)
+      )
+
+      slug_download_obitos(suffix)
+    })
+
+    dados_download_om <- reactive({
+      df <- dados_om_final()
+      validate(need(nrow(df) > 0, "Não há dados para baixar com os filtros selecionados."))
+
+      df %>%
+        dplyr::transmute(
+          `Capítulo CID10` = capitulo_cid10,
+          `Categoria CID10` = causabas_categoria,
+          `Tipo de morte materna` = tipo_de_morte_materna,
+          `Município de residência` = municipio_residencia,
+          `Município de ocorrência` = municipio_ocorrencia,
+          `Período do óbito` = periodo_do_obito,
+          `Raça/Cor` = racacor,
+          `Investigação por CMM` = investigacao_cmm,
+          `Nº de óbitos` = as.numeric(obitos)
+        )
+    })
+
+    write_obitos_xlsx <- function(df, file) {
+      wb <- openxlsx::createWorkbook()
+      sheet_name <- "Tabela"
+      header_style <- openxlsx::createStyle(
+        textDecoration = "bold",
+        fgFill = "#EAF0F7",
+        border = "bottom"
+      )
+      integer_style <- openxlsx::createStyle(numFmt = "#,##0")
+
+      openxlsx::addWorksheet(wb, sheet_name)
+      openxlsx::writeData(wb, sheet_name, df, headerStyle = header_style, withFilter = TRUE)
+      openxlsx::freezePane(wb, sheet_name, firstRow = TRUE)
+      openxlsx::setColWidths(wb, sheet_name, cols = seq_len(ncol(df)), widths = "auto")
+
+      obitos_col <- match("Nº de óbitos", names(df))
+      if (!is.na(obitos_col) && nrow(df) > 0) {
+        openxlsx::addStyle(
+          wb,
+          sheet_name,
+          integer_style,
+          rows = 2:(nrow(df) + 1),
+          cols = obitos_col,
+          gridExpand = TRUE,
+          stack = TRUE
         )
       }
-    })
-    output$download_OM <- downloadHandler(
+
+      openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+    }
+
+    output$download_OM_xlsx <- downloadHandler(
       filename = function() {
-        ext <- tolower(input$filetype)
-        paste0("obitos_maternos_sp_", tolower(gsub("[[:space:]]+","_",input$nivel)), "_", input$ano, ".", ext)
+        paste0("obitos_classificados_como_morte_materna_", download_suffix_om(), ".xlsx")
       },
+      contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       content = function(file) {
-        df <- dados_om_final()
-        if (input$filetype == "CSV") utils::write.csv(df, file, row.names = FALSE, fileEncoding = "UTF-8")
-        else openxlsx::write.xlsx(df, file, rowNames = FALSE)
+        write_obitos_xlsx(dados_download_om(), file)
       }
     )
+
+    outputOptions(output, "download_OM_xlsx", suspendWhenHidden = FALSE)
   })
 }

@@ -30,7 +30,7 @@ mod_prenatal_ui <- function(id) {
             tags$h5(class = "section-header", "Selecione o nível de análise:"),
             selectInput(
               ns("nivel"), NULL,
-              choices  = c("ESTADUAL","RRAS","DRS","REGIÃO DE SAÚDE","MUNICIPAL"),
+              choices  = c("ESTADO DE SP" = "ESTADUAL", "DRS" = "DRS", "RRAS" = "RRAS", "REGIÃO DE SAÚDE" = "REGIÃO DE SAÚDE", "MUNICIPAL" = "MUNICIPAL"),
               selected = "ESTADUAL"
             ),
             uiOutput(ns("filtros_locais")), hr(),
@@ -61,7 +61,9 @@ mod_prenatal_ui <- function(id) {
               tags$p(HTML("em que \\(\\{\\}\\) deve ser substituído pela categoria <code>nenhuma
                           consulta</code>, <code>1 a 6 consultas</code> ou <code>7+ consultas</code>,
                           a depender da análise de interesse."))
-            )
+            ),
+            div(style = "text-align:center; margin-top:15px;",
+                actionButton(ns("btn_prenatal_modal"), "Ver diagrama de pré-natal", icon = icon("image")))
           )
         )
       ),

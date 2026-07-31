@@ -14,6 +14,23 @@ mod_prenatal_server <- function(id, data_list) {
                         value=c(min(anos_disp), max(anos_disp)))
     })
 
+    observeEvent(input$btn_prenatal_modal, {
+      showModal(tagList(
+        tags$style(HTML("
+          .modal-dialog { width: 90vw !important; max-width: 90vw !important; }
+          .modal-body { max-height: 90vh; overflow-y: auto; padding: 0 !important; }
+        ")),
+        modalDialog(
+          title     = "Diagrama de pré-natal",
+          easyClose = TRUE,
+          footer    = modalButton("Fechar"),
+          tags$div(class = "modal-body",
+                   style = "display:flex; justify-content:center; align-items:flex-start;",
+                   tags$img(src = "www/diagrama_consultas_pre_natal.jpg", style = "width:100%; height:auto;"))
+        )
+      ))
+    })
+
     output$filtros_locais <- renderUI({
       req(input$nivel)
       # switch(
@@ -149,7 +166,7 @@ mod_prenatal_server <- function(id, data_list) {
         ggplot2::aes(x = ano, y = pct,
                      text = paste0(format(round(pct*100, 2), big.mark=".", decimal.mark=","), "%"))
       ) +
-        ggplot2::geom_col(fill = "#37399a", color = "black") +
+        ggplot2::geom_col(fill = "#0a1e3c", color = "black") +
         ggplot2::labs(
           x = "Ano",
           y = switch(input$serie,

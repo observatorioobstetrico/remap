@@ -155,7 +155,7 @@ mod_robson_server <- function(id, data_list) {
           text = paste0("% de Robson: ", formatC(pct, format="f", digits=2, decimal.mark=",", big.mark="."), "%")
         )
       ) +
-        ggplot2::geom_col(fill = "#37399a", color = "black") +
+        ggplot2::geom_col(fill = "#0a1e3c", color = "black") +
         ggplot2::labs(x = "Grupo de Robson", y = "% de Robson") +
         ggplot2::theme_linedraw()
 

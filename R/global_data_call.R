@@ -17,7 +17,11 @@ load_data <- function(rebuild = FALSE) {
   deps   <- c(
     remaps,
     file.path(path_data, "RRAS-MUNICIPIO.xlsx"),
-    file.path(path_data, "total_sp.xlsx")
+    file.path(path_data, "total_sp.xlsx"),
+    file.path(path_data, "cobertura_ab_aps.rda"),
+    file.path(path_data, "cobertura_ans_aps.rda"),
+    file.path(path_data, "nascidos_vivos_aps.rda"),
+    file.path(path_data, "ubs_cnes_aps.rda")
   )
 
   with_cache("call_data", deps, builder = function() {
@@ -117,6 +121,22 @@ load_data <- function(rebuild = FALSE) {
       "NASCIDOS VIVOS SUSDEPENDENTES ESTIMADOS/ANO"
     ))
 
+    e_cobertura_ab <- new.env(parent = emptyenv())
+    load(file.path(path_data, "cobertura_ab_aps.rda"), envir = e_cobertura_ab)
+    cobertura_ab_aps <- e_cobertura_ab$aps_cobertura_ab
+
+    e_cobertura_ans <- new.env(parent = emptyenv())
+    load(file.path(path_data, "cobertura_ans_aps.rda"), envir = e_cobertura_ans)
+    cobertura_ans_aps <- e_cobertura_ans$aps_cobertura_ans
+
+    e_nascidos_vivos <- new.env(parent = emptyenv())
+    load(file.path(path_data, "nascidos_vivos_aps.rda"), envir = e_nascidos_vivos)
+    nascidos_vivos_aps <- e_nascidos_vivos$aps_nascidos_vivos
+
+    e_ubs_cnes <- new.env(parent = emptyenv())
+    load(file.path(path_data, "ubs_cnes_aps.rda"), envir = e_ubs_cnes)
+    ubs_cnes_aps <- e_ubs_cnes$aps_ubs_cnes
+
     # Monta retorno (mesmo contrato do original)
     c(
       list(tabela_APS = tabela_APS),
@@ -124,7 +144,11 @@ load_data <- function(rebuild = FALSE) {
       tabela_BXRISCO,
       list(
         rras_municipio = rras_municipio,
-        total_sp       = total_sp
+        total_sp       = total_sp,
+        cobertura_ab_aps = cobertura_ab_aps,
+        cobertura_ans_aps = cobertura_ans_aps,
+        nascidos_vivos_aps = nascidos_vivos_aps,
+        ubs_cnes_aps = ubs_cnes_aps
       )
     )
   }, rebuild = rebuild)

@@ -1,0 +1,12 @@
+name: shinyremap
+title: shinyremap
+username: observatorioobstetrico
+account: observatorioobstetrico
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17655871
+bundleId: 12345011
+url: https://observatorioobstetrico.shinyapps.io/shinyremap/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

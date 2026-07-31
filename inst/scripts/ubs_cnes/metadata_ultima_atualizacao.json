@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-05-21T12:39:50Z",
+  "available_years": [2022, 2023, 2024, 2025],
+  "consolidated_years": [2022, 2023, 2024, 2025],
+  "preliminary_year": null,
+  "output_rda": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/ubs_cnes_aps.rda",
+  "output_xlsx": "C:/Users/josec/Documents/R/shinyremap/inst/app/data/ubs_cnes_aps.xlsx",
+  "validation": [
+    {
+      "ano": 2022,
+      "competencia": "202212",
+      "municipios_total": 645,
+      "municipios_com_ubs": 629,
+      "total_ubs": 5029,
+      "registros_ubs_raw": 5029,
+      "cnes_distintos_raw": 5029
+    },
+    {
+      "ano": 2023,
+      "competencia": "202312",
+      "municipios_total": 645,
+      "municipios_com_ubs": 637,
+      "total_ubs": 5132,
+      "registros_ubs_raw": 5132,
+      "cnes_distintos_raw": 5132
+    },
+    {
+      "ano": 2024,
+      "competencia": "202412",
+      "municipios_total": 645,
+      "municipios_com_ubs": 638,
+      "total_ubs": 5236,
+      "registros_ubs_raw": 5236,
+      "cnes_distintos_raw": 5236
+    },
+    {
+      "ano": 2025,
+      "competencia": "202512",
+      "municipios_total": 645,
+      "municipios_com_ubs": 639,
+      "total_ubs": 5281,
+      "registros_ubs_raw": 5281,
+      "cnes_distintos_raw": 5281
+    }
+  ]
+}

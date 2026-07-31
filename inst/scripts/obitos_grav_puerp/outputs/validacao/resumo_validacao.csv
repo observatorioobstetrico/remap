@@ -1,0 +1,5 @@
+dataset,comparacao,linhas_novo,linhas_alvo,obitos_novo,obitos_alvo,diferenca,combinacoes_divergentes,bate_exatamente
+oficiais,autochecagem_sem_municipio_ocorrencia,8280,8280,8328,8328,0,0,TRUE
+oficiais,painel_referencia,8280,8280,8328,8328,0,0,TRUE
+nao_considerados,autochecagem_sem_municipio_ocorrencia,9837,9837,9861,9861,0,0,TRUE
+nao_considerados,painel_referencia,9837,9837,9861,9861,0,0,TRUE
